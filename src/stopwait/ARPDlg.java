@@ -188,59 +188,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	class setAddressListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == NICComboBox) {
-				ProxyARPTextArea.setText("");
-				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
-				List<PcapIf> l = NI.m_pAdapterList;
-				try {
-					byte[] address = l.get(NICComboBox.getSelectedIndex()).getHardwareAddress();
-					int j = 0;
-					for (byte inetAddress : address) {
-						ProxyARPTextArea.append(String.format("%02x", inetAddress));
-						if (j++ != address.length - 1)
-							ProxyARPTextArea.append("-");
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			} else if (e.getSource() == Setting_Button) {
-				if (Setting_Button.getText().equals("Setting")) {
-					
-					if (dstMACAddress.getText().equals("") || ProxyARPTextArea.getText().equals("")) {
-						JOptionPane.showMessageDialog(null, "입력이 없습니다!");
-					}
-					else {
-						NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
-						EthernetLayer Eth = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
-
-						Eth.Setenet_dstaddr(dstMACAddress.getText());
-						Eth.Setenet_srcaddr(ProxyARPTextArea.getText());
-						int i = NICComboBox.getSelectedIndex();
-						NI.SetAdapterNumber(i);
-
-						dstMACAddress.setEnabled(false);
-						ProxyARPTextArea.setEnabled(false);
-						NICComboBox.setEnabled(false);
-						Setting_Button.setText("Reset");
-					}
-				} else {
-					dstMACAddress.setEnabled(true);
-					ProxyARPTextArea.setEnabled(true);
-					NICComboBox.setEnabled(true);
-					dstMACAddress.setText("");
-					Setting_Button.setText("Setting");
-				}
-			} else if (e.getSource() == ARPCacheItemDeleteButton) {
-				if (Setting_Button.getText().equals("Setting")) {
-					JOptionPane.showMessageDialog(null, "주소 설정을 먼저 하십시오.");					
-				}
-				else {
-					byte[] input = ARPCacheInputField.getText().getBytes();
-					ARPCacheTextArea.append("[SEND]:" + ARPCacheInputField.getText() + "\n");
-					p_UnderLayer.Send(input, input.length);
-					ARPCacheInputField.setText("");
-				}
-			}
+			// 액션 추가 해야함
 		}
 	}
 
