@@ -48,13 +48,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 
 	JTextArea ARPCacheTextArea;
 	JTextArea ProxyARPTextArea;
-	JTextArea dstMACAddress;
 	
-	JLabel lblNIC;
-	JLabel lblsrc;
-	JLabel lbldst;
-
-	JButton Setting_Button;
 	JButton ARPCacheItemDeleteButton;
 	JButton ARPCacheAllDeleteButton;
 	JButton ARPCacheSendButton;
@@ -63,12 +57,6 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	JButton GratuitousARPSendButton;
 	JButton TerminateButton;
 	JButton CancelButton;
-
-	static JComboBox<String> NICComboBox;
-
-	int adapterNumber = 0;
-
-	String Text;
 
 	public static void main(String[] args) throws SocketException {
 		// TODO Auto-generated method stub
