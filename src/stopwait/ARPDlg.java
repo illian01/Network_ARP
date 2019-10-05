@@ -32,7 +32,7 @@ import javax.swing.border.TitledBorder;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 
-public class StopWaitDlg extends JFrame implements BaseLayer {
+public class ARPDlg extends JFrame implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
@@ -67,11 +67,11 @@ public class StopWaitDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.AddLayer(new NILayer("NI"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Eth"));
 		m_LayerMgr.AddLayer(new ChatAppLayer("App"));
-		m_LayerMgr.AddLayer(new StopWaitDlg("GUI"));
+		m_LayerMgr.AddLayer(new ARPDlg("GUI"));
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *App  ( *GUI ) ) )");
 	}
 
-	public StopWaitDlg(String pName) throws SocketException {
+	public ARPDlg(String pName) throws SocketException {
 		pLayerName = pName;
 
 		setTitle("SWP");
