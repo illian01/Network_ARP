@@ -37,6 +37,7 @@ public class IPLayer implements BaseLayer {
 			this.ip_fragoff = new byte[2];
 			this.ip_ttl = 0x00;
 			this.ip_proto = 0x00;
+			ip_cksum = new byte[2];
 			this.ip_data = null;
 		}
 		
@@ -97,11 +98,11 @@ public class IPLayer implements BaseLayer {
 		buf[10] = Header.ip_cksum[0];
 		buf[11] = Header.ip_cksum[1];
 		
-		for (int i = 0; i < length; i++)
+		for (int i = 0; i < 4; i++)
 			buf[12 + i] = Header.ip_src.addr[i];
 		
-		for (int i = 0; i < length; i++)
-			buf[16 + i] = Header.ip_src.addr[i];
+		for (int i = 0; i < 4; i++)
+			buf[16 + i] = Header.ip_dst.addr[i];
 
 		for (int i = 0; i < length; i++)
 			buf[20 + i] = input[i];
