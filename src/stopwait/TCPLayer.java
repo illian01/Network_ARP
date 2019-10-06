@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 
-public class TCP implements BaseLayer {
+public class TCPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
@@ -53,7 +53,7 @@ public class TCP implements BaseLayer {
 
 	_TCP m_sHeader = new _TCP();
 
-	public TCP(String pName) {
+	public TCPLayer(String pName) {
 		
 		pLayerName = pName;
 		ResetHeader();

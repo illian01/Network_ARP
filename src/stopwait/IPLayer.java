@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 
-public class IP implements BaseLayer {
+public class IPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
@@ -55,7 +55,7 @@ public class IP implements BaseLayer {
 
 	_IP m_sHeader = new _IP();
 
-	public IP(String pName) {
+	public IPLayer(String pName) {
 		
 		pLayerName = pName;
 		ResetHeader();
