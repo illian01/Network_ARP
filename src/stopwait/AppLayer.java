@@ -3,7 +3,7 @@ package stopwait;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public class ChatAppLayer implements BaseLayer {
+public class AppLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
@@ -26,7 +26,7 @@ public class ChatAppLayer implements BaseLayer {
 
 	_CHAT_APP m_sHeader = new _CHAT_APP();
 
-	public ChatAppLayer(String pName) {
+	public AppLayer(String pName) {
 		// super(pName);
 		// TODO Auto-generated constructor stub
 		pLayerName = pName;

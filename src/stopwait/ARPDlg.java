@@ -62,7 +62,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		// TODO Auto-generated method stub
 		m_LayerMgr.AddLayer(new NILayer("NI"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Eth"));
-		m_LayerMgr.AddLayer(new ChatAppLayer("App"));
+		m_LayerMgr.AddLayer(new AppLayer("App"));
 		m_LayerMgr.AddLayer(new ARPDlg("GUI"));
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *App  ( *GUI ) ) )");
 	}
