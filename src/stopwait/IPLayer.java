@@ -135,14 +135,14 @@ public class IP implements BaseLayer {
 	}
 	
 	
-	public void Setenet_dstaddr(String address) {
+	public void SetIP_dstaddr(String address) {
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
 			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken(), 16);
 	}
 	
-	public void Setenet_srcaddr(String address) {
+	public void SetIP_srcaddr(String address) {
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
