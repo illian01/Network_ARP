@@ -40,11 +40,11 @@ public class EthernetLayer implements BaseLayer {
 	_ETHERNET_Frame m_sHeader = new _ETHERNET_Frame();
 	
 	public EthernetLayer(String pName) {
-		// TODO Auto-generated constructor stub
+		
 		pLayerName = pName;
 	}
 	
-	public byte[] ObjToByte(_ETHERNET_Frame Header, byte[] input, int length) {
+	public byte[] ObjToByte(_ETHERNET_Frame Header, int length, int type) {
 		byte[] buf = new byte[length + 14];
 		
 		buf[0] = Header.enet_dstaddr.addr[0];	// DA
@@ -63,7 +63,7 @@ public class EthernetLayer implements BaseLayer {
 		buf[13] = Header.enet_type[1];
 		
 		for (int i = 0; i < length; i++)
-			buf[14 + i] = input[i];
+			buf[14 + i] = Header.enet_data[i];
 		
 		return buf;
 	}
@@ -75,11 +75,45 @@ public class EthernetLayer implements BaseLayer {
 		return data;
 	}
 	
-	public boolean Send(byte[] input, int length) {
-		byte[] bytes = ObjToByte(m_sHeader, input, input.length);
-		this.GetUnderLayer().Send(bytes, bytes.length);
+	public void MakeEthernetFrame(byte[] input, int type) {
 		
-		return true;
+		if (type == 0) { // ARP request
+			
+			m_sHeader.enet_type[0] = (byte) 0x00;
+			m_sHeader.enet_type[1] = (byte) 0x01;
+			m_sHeader.enet_data = input;
+			
+		} else if(type == 1) { 	// data
+
+			m_sHeader.enet_type[0] = (byte) 0x00;
+			m_sHeader.enet_type[1] = (byte) 0x01;
+			m_sHeader.enet_data = input;
+	
+		} 
+	}
+	
+	public boolean Send(byte[] input, int length) {
+		
+		byte[] bytes;
+		
+		// arp frame에서 frame type을 보고 브로드캐스트인지 데이터인지 구분
+		if(input[12] == 0x00 && input[13] == 0x00) {			// ARP request 
+			
+			MakeEthernetFrame(input, 0);
+			bytes = ObjToByte(m_sHeader, input.length, 0);
+			this.GetUnderLayer().Send(bytes, bytes.length);
+			return true;
+		}
+		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
+			
+			MakeEthernetFrame(input, 1);
+			bytes = ObjToByte(m_sHeader, input.length, 1);
+			this.GetUnderLayer().Send(bytes, bytes.length);
+			return true;
+		}
+		else
+			return false;
+		
 	}
 	
 	public synchronized boolean Receive(byte[] input) {
@@ -100,10 +134,21 @@ public class EthernetLayer implements BaseLayer {
 			}
 		}
 			
-		data = RemoveEtherHeader(input, input.length);
-		this.GetUpperLayer(0).Receive(data);
-		
-		return true;
+		if(input[12] == 0x00 && input[13] == 0x00) {			// ARP reply 
+			
+			data = RemoveEtherHeader(input, input.length);
+			this.GetUpperLayer(1).Receive(data); 				// ARP Layer
+			return true;
+		}
+		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
+			
+			data = RemoveEtherHeader(input, input.length);
+			this.GetUpperLayer(0).Receive(data);				// IP Layer
+			return true;
+		}
+		else
+			return false;
+				
 	}
 	
 	public boolean IsItMyPacket(byte[] input) {
