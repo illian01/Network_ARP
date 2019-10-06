@@ -129,7 +129,7 @@ public class TCPLayer implements BaseLayer {
 
 		byte[] data = RemoveIPHeader(input, input.length);
 		
-		// dport È®ÀÎÇÏ¿© ¸Â´Â °æ¿ì¿¡¸¸ ¿Ã·Áº¸³¿
+		// dport í™•ì¸í•˜ì—¬ ë§ëŠ” ê²½ìš°ì—ë§Œ ì˜¬ë ¤ë³´ëƒ„
 		for (int i = 0; i < 2; i++) {
 			if (input[i] != m_sHeader.tcp_dport.addr[i]) 
 				return false;
@@ -141,7 +141,7 @@ public class TCPLayer implements BaseLayer {
 	
 	
 
-	public void Setenet_dstaddr(int address) {
+	public void SetTCP_dstaddr(int address) {
 		byte[] bytes = intToByte2(address);
 		
 		for(int i = 0; i < 2; i++)
@@ -149,7 +149,7 @@ public class TCPLayer implements BaseLayer {
 		 
 	}
 	
-	public void Setenet_srcaddr(int address) {
+	public void SetTCP_srcaddr(int address) {
 		byte[] bytes = intToByte2(address);
 		
 		for(int i = 0; i < 2; i++)
