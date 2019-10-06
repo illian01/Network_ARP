@@ -62,9 +62,14 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		// TODO Auto-generated method stub
 		m_LayerMgr.AddLayer(new NILayer("NI"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Eth"));
+		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
+		m_LayerMgr.AddLayer(new IPLayer("IP"));
+		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
 		m_LayerMgr.AddLayer(new AppLayer("App"));
 		m_LayerMgr.AddLayer(new ARPDlg("GUI"));
-		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *App  ( *GUI ) ) )");
+		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *GUI ) ) ) ) )");
+		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
+		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
 	}
 
 	public ARPDlg(String pName) throws SocketException {
@@ -177,6 +182,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// 액션 추가 해야함
+			System.out.println();
 		}
 	}
 
