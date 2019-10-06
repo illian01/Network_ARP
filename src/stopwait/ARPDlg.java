@@ -181,8 +181,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	class setAddressListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// 액션 추가 해야함
-			System.out.println();
+			if(e.getSource() == ARPCacheSendButton) {
+				byte[] input = ARPCacheInputField.getText().getBytes();
+				GetUnderLayer().Send(input, input.length);
+			}
 		}
 	}
 
