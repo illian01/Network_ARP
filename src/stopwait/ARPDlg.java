@@ -44,6 +44,8 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	private JTextField ARPCacheInputField;
 	private JTextField GratuitousARPInputField;
 
+	JComboBox<String> NICComboBox;
+	
 	Container contentPane;
 
 	JTextArea ARPCacheTextArea;
@@ -165,13 +167,21 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPPanel.add(GratuitousARPSendButton);
 		
 		// Two button on bottom side
+		NICComboBox = new JComboBox<>();
+		List<PcapIf> l = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList;
+		for (int i = 0; i < l.size(); i++)
+			NICComboBox.addItem(l.get(i).getDescription() + " : " + l.get(i).getName());
+		NICComboBox.setBounds(10, 355, 550, 30);
+		NICComboBox.addActionListener(new setAddressListener());
+		contentPane.add(NICComboBox);//
+		
 		SettingButton = new JButton("설정");
-		SettingButton.setBounds(305, 355, 100, 30);
+		SettingButton.setBounds(570, 355, 100, 30);
 		SettingButton.addActionListener(new setAddressListener());
 		contentPane.add(SettingButton);
 		
 		ExitButton = new JButton("종료");
-		ExitButton.setBounds(420, 355, 100, 30);
+		ExitButton.setBounds(712, 355, 100, 30);
 		ExitButton.addActionListener(new setAddressListener());
 		contentPane.add(ExitButton);
 		
