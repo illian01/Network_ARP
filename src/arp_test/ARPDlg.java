@@ -30,6 +30,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 
 public class ARPDlg extends JFrame implements BaseLayer {
@@ -194,6 +195,44 @@ public class ARPDlg extends JFrame implements BaseLayer {
 			if(e.getSource() == ARPCacheSendButton) {
 				byte[] input = ARPCacheInputField.getText().getBytes();
 				GetUnderLayer().Send(input, input.length);
+			}
+			else if(e.getSource() == SettingButton) {
+				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
+				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
+				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				
+				List<PcapIf> l = NI.m_pAdapterList;
+				String src_mac = "";
+				String src_ip = "";
+				int index = NICComboBox.getSelectedIndex();
+				try {
+					byte[] address = l.get(index).getHardwareAddress();
+					int j = 0;
+					for (byte inetAddress : address) {
+						src_mac += String.format("%02x", inetAddress);
+						if (j++ != address.length - 1)
+							src_mac += "-";
+					}
+					
+					List<PcapAddr> addr = l.get(index).getAddresses();
+					String[] token = addr.get(0).getAddr().toString().split("\\.");
+					if(token[0].contains("INET6")) return ;
+					src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2]
+							+ "." + token[3].substring(0, token[3].length()-1);
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
+				IP.SetIP_srcaddr(src_ip);
+				ETH.Setenet_srcaddr(src_mac);
+				ARP.SetIP_srcaddr(src_ip);
+				ARP.SetMAC_srcaddr(src_mac);
+				NI.SetAdapterNumber(index);
+				
+				NICComboBox.setEnabled(false);;
+				
 			}
 		}
 	}

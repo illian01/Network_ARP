@@ -3,6 +3,7 @@ package arp_test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 public class ARPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
@@ -180,6 +181,36 @@ public class ARPLayer implements BaseLayer {
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
+	}
+	
+	public void SetMAC_dstaddr(String address) {
+		StringTokenizer st = new StringTokenizer(address, "-");
+		
+		for(int i = 0; i < 6; i++)
+			m_sHeader.dst_mac_addr.addr[i] = (byte) Integer.parseInt(st.nextToken(), 16);
+		 
+	}
+	
+	public void SetMAC_srcaddr(String address) {
+		StringTokenizer st = new StringTokenizer(address, "-");
+		
+		for(int i = 0; i < 6; i++)
+			m_sHeader.src_mac_addr.addr[i] = (byte) Integer.parseInt(st.nextToken(), 16);
+		 
+	}
+	
+	public void SetIP_dstaddr(String address) {
+		StringTokenizer st = new StringTokenizer(address, ".");
+		
+		for(int i = 0; i < 4; i++)
+			m_sHeader.dst_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
+	}
+	
+	public void SetIP_srcaddr(String address) {
+		StringTokenizer st = new StringTokenizer(address, ".");
+		
+		for(int i = 0; i < 4; i++)
+			m_sHeader.src_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 
 
