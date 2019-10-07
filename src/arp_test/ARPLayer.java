@@ -68,6 +68,24 @@ public class ARPLayer implements BaseLayer {
 
 	public ARPLayer(String pName) {
 		pLayerName = pName;
+		setHeader();
+	}
+	
+	public void setHeader() {
+		m_sHeader.hardware_type[0] = (byte) 0x00;
+		m_sHeader.hardware_type[1] = (byte) 0x01;
+		m_sHeader.protocol_type[0] = (byte) 0x08;
+		m_sHeader.protocol_type[1] = (byte) 0x00;
+		m_sHeader.hardware_addr_len = (byte) 0x06;
+		m_sHeader.protocol_addr_len = (byte) 0x04;
+		m_sHeader.opcode[0] = (byte) 0x00;
+		m_sHeader.opcode[1] = (byte) 0x01;
+		m_sHeader.dst_mac_addr.addr[0] = (byte) 0xFF;
+		m_sHeader.dst_mac_addr.addr[1] = (byte) 0xFF;
+		m_sHeader.dst_mac_addr.addr[2] = (byte) 0xFF;
+		m_sHeader.dst_mac_addr.addr[3] = (byte) 0xFF;
+		m_sHeader.dst_mac_addr.addr[4] = (byte) 0xFF;
+		m_sHeader.dst_mac_addr.addr[5] = (byte) 0xFF;
 	}
 	
 	public byte[] gen_ARP_msg() {
@@ -123,10 +141,6 @@ public class ARPLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 		return true;
-	}
-	
-	public void setHeader() {
-		
 	}
 	
 	private String getIPAddr(byte[] input) {
