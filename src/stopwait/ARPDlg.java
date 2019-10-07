@@ -55,8 +55,8 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	JButton ProxyARPAddButton;
 	JButton ProxyARPDeleteButton;
 	JButton GratuitousARPSendButton;
-	JButton TerminateButton;
-	JButton CancelButton;
+	JButton SettingButton;
+	JButton ExitButton;
 
 	public static void main(String[] args) throws SocketException {
 		// TODO Auto-generated method stub
@@ -165,15 +165,15 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPPanel.add(GratuitousARPSendButton);
 		
 		// Two button on bottom side
-		TerminateButton = new JButton("종료");
-		TerminateButton.setBounds(305, 355, 100, 30);
-		TerminateButton.addActionListener(new setAddressListener());
-		contentPane.add(TerminateButton);
+		SettingButton = new JButton("설정");
+		SettingButton.setBounds(305, 355, 100, 30);
+		SettingButton.addActionListener(new setAddressListener());
+		contentPane.add(SettingButton);
 		
-		CancelButton = new JButton("취소");
-		CancelButton.setBounds(420, 355, 100, 30);
-		CancelButton.addActionListener(new setAddressListener());
-		contentPane.add(CancelButton);
+		ExitButton = new JButton("종료");
+		ExitButton.setBounds(420, 355, 100, 30);
+		ExitButton.addActionListener(new setAddressListener());
+		contentPane.add(ExitButton);
 		
 		setVisible(true);
 	}
