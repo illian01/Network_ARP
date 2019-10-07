@@ -140,14 +140,14 @@ public class IPLayer implements BaseLayer {
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
-			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken(), 16);
+			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 	
 	public void SetIP_srcaddr(String address) {
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
-			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken(), 16);
+			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 
 
