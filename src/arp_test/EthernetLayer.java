@@ -75,35 +75,25 @@ public class EthernetLayer implements BaseLayer {
 		return data;
 	}
 	
-	public void MakeEthernetFrame(byte[] input, int type) {
-		
-		if (type == 0) { // ARP request
-			
-			m_sHeader.enet_type[0] = (byte) 0x00;
-			m_sHeader.enet_type[1] = (byte) 0x01;
-			m_sHeader.enet_data = input;
-			
-		} else if(type == 1) { 	// data
-
-			m_sHeader.enet_type[0] = (byte) 0x00;
-			m_sHeader.enet_type[1] = (byte) 0x01;
-			m_sHeader.enet_data = input;
-	
-		} 
-	}
-	
 	public boolean Send(byte[] input, int length) {
 		
 		byte[] bytes;
 		
 		// arp frame에서 frame type을 보고 브로드캐스트인지 데이터인지 구분
-		if(input[12] == 0x00 && input[13] == 0x00) {			// ARP request 
+		if(input[6] == 0x00 && input[7] == 0x01) {			// ARP request 
+			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
+			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;
+			m_sHeader.enet_dstaddr.addr[2] = (byte) 0xFF;
+			m_sHeader.enet_dstaddr.addr[3] = (byte) 0xFF;
+			m_sHeader.enet_dstaddr.addr[4] = (byte) 0xFF;
+			m_sHeader.enet_dstaddr.addr[5] = (byte) 0xFF;
+			m_sHeader.enet_data = input;
 			
-			MakeEthernetFrame(input, 0);
 			bytes = ObjToByte(m_sHeader, input.length, 0);
 			this.GetUnderLayer().Send(bytes, bytes.length);
 			return true;
 		}
+		/*
 		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
 			
 			MakeEthernetFrame(input, 1);
@@ -113,7 +103,8 @@ public class EthernetLayer implements BaseLayer {
 		}
 		else
 			return false;
-		
+		*/
+		return false;
 	}
 	
 	public synchronized boolean Receive(byte[] input) {
