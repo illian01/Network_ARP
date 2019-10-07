@@ -1,4 +1,4 @@
-package stopwait;
+package arp_test;
 
 
 import java.util.ArrayList;
@@ -128,7 +128,7 @@ public class TCPLayer implements BaseLayer {
 
 		byte[] data = RemoveIPHeader(input, input.length);
 		
-		// dport ν™•μΈν•μ—¬ λ§λ” κ²½μ°μ—λ§ μ¬λ ¤λ³΄λƒ„
+		// dport ?™•?Έ?•?—¬ λ§λ” κ²½μ°?—λ§? ?¬? ¤λ³΄λƒ„
 		for (int i = 0; i < 2; i++) {
 			if (input[i] != m_sHeader.tcp_dport.addr[i]) 
 				return false;

@@ -1,4 +1,4 @@
-package stopwait;
+package arp_test;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -44,6 +44,8 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	private JTextField ARPCacheInputField;
 	private JTextField GratuitousARPInputField;
 
+	JComboBox<String> NICComboBox;
+	
 	Container contentPane;
 
 	JTextArea ARPCacheTextArea;
@@ -55,8 +57,8 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	JButton ProxyARPAddButton;
 	JButton ProxyARPDeleteButton;
 	JButton GratuitousARPSendButton;
-	JButton TerminateButton;
-	JButton CancelButton;
+	JButton SettingButton;
+	JButton ExitButton;
 
 	public static void main(String[] args) throws SocketException {
 		// TODO Auto-generated method stub
@@ -165,15 +167,23 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPPanel.add(GratuitousARPSendButton);
 		
 		// Two button on bottom side
-		TerminateButton = new JButton("종료");
-		TerminateButton.setBounds(305, 355, 100, 30);
-		TerminateButton.addActionListener(new setAddressListener());
-		contentPane.add(TerminateButton);
+		NICComboBox = new JComboBox<>();
+		List<PcapIf> l = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList;
+		for (int i = 0; i < l.size(); i++)
+			NICComboBox.addItem(l.get(i).getDescription() + " : " + l.get(i).getName());
+		NICComboBox.setBounds(10, 355, 550, 30);
+		NICComboBox.addActionListener(new setAddressListener());
+		contentPane.add(NICComboBox);//
 		
-		CancelButton = new JButton("취소");
-		CancelButton.setBounds(420, 355, 100, 30);
-		CancelButton.addActionListener(new setAddressListener());
-		contentPane.add(CancelButton);
+		SettingButton = new JButton("설정");
+		SettingButton.setBounds(570, 355, 100, 30);
+		SettingButton.addActionListener(new setAddressListener());
+		contentPane.add(SettingButton);
+		
+		ExitButton = new JButton("종료");
+		ExitButton.setBounds(712, 355, 100, 30);
+		ExitButton.addActionListener(new setAddressListener());
+		contentPane.add(ExitButton);
 		
 		setVisible(true);
 	}
