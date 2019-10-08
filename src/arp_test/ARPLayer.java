@@ -154,7 +154,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean Send(byte[] input, int length) {
-    	System.out.println("ARP SEND");
+  
         String dst_addr = getDstIPAddr(input);
         
         if (!cacheTable.containsKey(dst_addr)) {
@@ -183,7 +183,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	System.out.println("ARP RECEIVE");
+    	
         return true;
     }
 
