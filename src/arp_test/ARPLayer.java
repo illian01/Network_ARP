@@ -26,7 +26,6 @@ public class ARPLayer implements BaseLayer {
         byte hardware_addr_len;
         byte protocol_addr_len;
         byte[] opcode;
-		byte[] arp_data;
 
         public _ARP_Packet() {
             src_mac_addr = new _MAC_ADDR();
@@ -39,7 +38,6 @@ public class ARPLayer implements BaseLayer {
             hardware_addr_len = (byte) 0x00;
             protocol_addr_len = (byte) 0x00;
             opcode = new byte[2];
-            arp_data = null;
         }
 
         private class _MAC_ADDR {
