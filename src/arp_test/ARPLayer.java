@@ -90,95 +90,57 @@ public class ARPLayer implements BaseLayer {
         m_sHeader.dst_mac_addr.addr[5] = (byte) 0xFF;
     }
 
-    public byte[] GenARPMsgHeader() {
-        byte[] ARPMsgHeader = new byte[28];
-
-        ARPMsgHeader[0] = m_sHeader.hardware_type[0];
-        ARPMsgHeader[1] = m_sHeader.hardware_type[1];
-        ARPMsgHeader[2] = m_sHeader.protocol_type[0];
-        ARPMsgHeader[3] = m_sHeader.protocol_type[1];
-        ARPMsgHeader[4] = m_sHeader.hardware_addr_len;
-        ARPMsgHeader[5] = m_sHeader.protocol_addr_len;
-        ARPMsgHeader[6] = m_sHeader.opcode[0];
-        ARPMsgHeader[7] = m_sHeader.opcode[1];
-        ARPMsgHeader[8] = m_sHeader.src_mac_addr.addr[0];
-        ARPMsgHeader[9] = m_sHeader.src_mac_addr.addr[1];
-        ARPMsgHeader[10] = m_sHeader.src_mac_addr.addr[2];
-        ARPMsgHeader[11] = m_sHeader.src_mac_addr.addr[3];
-        ARPMsgHeader[12] = m_sHeader.src_mac_addr.addr[4];
-        ARPMsgHeader[13] = m_sHeader.src_mac_addr.addr[5];
-        ARPMsgHeader[14] = m_sHeader.src_ip_addr.addr[0];
-        ARPMsgHeader[15] = m_sHeader.src_ip_addr.addr[1];
-        ARPMsgHeader[16] = m_sHeader.src_ip_addr.addr[2];
-        ARPMsgHeader[17] = m_sHeader.src_ip_addr.addr[3];
-        ARPMsgHeader[18] = m_sHeader.dst_mac_addr.addr[0];
-        ARPMsgHeader[19] = m_sHeader.dst_mac_addr.addr[1];
-        ARPMsgHeader[20] = m_sHeader.dst_mac_addr.addr[2];
-        ARPMsgHeader[21] = m_sHeader.dst_mac_addr.addr[3];
-        ARPMsgHeader[22] = m_sHeader.dst_mac_addr.addr[4];
-        ARPMsgHeader[23] = m_sHeader.dst_mac_addr.addr[5];
-        ARPMsgHeader[24] = m_sHeader.dst_ip_addr.addr[0];
-        ARPMsgHeader[25] = m_sHeader.dst_ip_addr.addr[1];
-        ARPMsgHeader[26] = m_sHeader.dst_ip_addr.addr[2];
-        ARPMsgHeader[27] = m_sHeader.dst_ip_addr.addr[3];
-
-        return ARPMsgHeader;
-    }
-
-    private byte[] GenARPRequestHeader() {
-        m_sHeader.dst_mac_addr.addr[0] = (byte)0xff;
-		m_sHeader.dst_mac_addr.addr[1] = (byte)0xff;
-		m_sHeader.dst_mac_addr.addr[2] = (byte)0xff;
-		m_sHeader.dst_mac_addr.addr[3] = (byte)0xff;
-		m_sHeader.dst_mac_addr.addr[4] = (byte)0xff;
-		m_sHeader.dst_mac_addr.addr[5] = (byte)0xff;
-
-		byte[] ARPRequestHeader = GenARPMsgHeader();
-
-        return ARPRequestHeader;
-    }
-
-    private byte[] ObjToByte(int dataLength) {
-        byte[] buf = new byte[dataLength + 28];
-        byte[] header = GenARPMsgHeader();
-
-        for(int index = 0; index < 28; ++index) {
-        	buf[index] = header[index];
-		}
-
-        for(int index = 0; index < dataLength; ++index) {
-        	buf[index + 28] = m_sHeader.arp_data[index];
-		}
-
+    private byte[] ObjToByte() {
+        byte[] buf = new byte[28];
+        
+        buf[0] = m_sHeader.hardware_type[0];
+        buf[1] = m_sHeader.hardware_type[1];
+        buf[2] = m_sHeader.protocol_type[0];
+        buf[3] = m_sHeader.protocol_type[1];
+        buf[4] = m_sHeader.hardware_addr_len;
+        buf[5] = m_sHeader.protocol_addr_len;
+        buf[6] = m_sHeader.opcode[0];
+        buf[7] = m_sHeader.opcode[1];
+        buf[8] = m_sHeader.src_mac_addr.addr[0];
+        buf[9] = m_sHeader.src_mac_addr.addr[1];
+        buf[10] = m_sHeader.src_mac_addr.addr[2];
+        buf[11] = m_sHeader.src_mac_addr.addr[3];
+        buf[12] = m_sHeader.src_mac_addr.addr[4];
+        buf[13] = m_sHeader.src_mac_addr.addr[5];
+        buf[14] = m_sHeader.src_ip_addr.addr[0];
+        buf[15] = m_sHeader.src_ip_addr.addr[1];
+        buf[16] = m_sHeader.src_ip_addr.addr[2];
+        buf[17] = m_sHeader.src_ip_addr.addr[3];
+        buf[18] = m_sHeader.dst_mac_addr.addr[0];
+        buf[19] = m_sHeader.dst_mac_addr.addr[1];
+        buf[20] = m_sHeader.dst_mac_addr.addr[2];
+        buf[21] = m_sHeader.dst_mac_addr.addr[3];
+        buf[22] = m_sHeader.dst_mac_addr.addr[4];
+        buf[23] = m_sHeader.dst_mac_addr.addr[5];
+        buf[24] = m_sHeader.dst_ip_addr.addr[0];
+        buf[25] = m_sHeader.dst_ip_addr.addr[1];
+        buf[26] = m_sHeader.dst_ip_addr.addr[2];
+        buf[27] = m_sHeader.dst_ip_addr.addr[3];
+        
         return buf;
     }
 
     public boolean Send(byte[] input, int length) {
   
         String dst_addr = getDstIPAddr(input);
-        
         if (!cacheTable.containsKey(dst_addr)) {
-        	// Need for implementing that ARP Request
-        	m_sHeader.opcode[0] = 0x00;
-        	m_sHeader.opcode[1] = 0x01;
-        	m_sHeader.arp_data = input;
-        	// Need for implementing that receive mac addr and set mac addr
-        	
-            
-        } else {
-        	// Can communication when the ip addr exist in cache
+        	// ARP Request
         	String[] token = dst_addr.split("\\.");
             m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
             m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
             m_sHeader.dst_ip_addr.addr[2] = (byte) Integer.parseInt(token[2]);
             m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
-			m_sHeader.arp_data = input;
+        	m_sHeader.opcode[0] = 0x00;
+        	m_sHeader.opcode[1] = 0x01;
+        	byte[] msg = ObjToByte();
+        	GetUnderLayer().Send(msg, msg.length);
         }
         
-        // Send part(Common part)
-		byte[] msg = ObjToByte(input.length);
-		GetUnderLayer().Send(msg, msg.length);
-
         return true;
     }
 

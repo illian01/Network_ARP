@@ -88,6 +88,8 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_dstaddr.addr[3] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[4] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[5] = (byte) 0xFF;
+			m_sHeader.enet_type[0] = (byte) 0x08;
+			m_sHeader.enet_type[1] = (byte) 0x06;
 			m_sHeader.enet_data = input;
 			
 			bytes = ObjToByte(m_sHeader, input.length, 0);
@@ -133,7 +135,7 @@ public class EthernetLayer implements BaseLayer {
 				
 	}
 	
-public boolean CheckAddress(byte[] packet) {
+	public boolean CheckAddress(byte[] packet) {
 		
 		// broadcast 
 		 for (int i = 0; i < 6; i++) { 
