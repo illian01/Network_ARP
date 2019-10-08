@@ -73,6 +73,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *GUI ) ) ) ) )");
 		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
 		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
+		
 	}
 
 	public ARPDlg(String pName) throws SocketException {

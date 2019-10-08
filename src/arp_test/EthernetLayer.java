@@ -76,11 +76,12 @@ public class EthernetLayer implements BaseLayer {
 	}
 	
 	public boolean Send(byte[] input, int length) {
-		
+		System.out.println("ENETH SEND");
 		byte[] bytes;
 		
 		// Judge ARP Request or not as frame_type
 		if(input[6] == 0x00 && input[7] == 0x01) {			// ARP request 
+			System.out.println("for ARP request");
 			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[2] = (byte) 0xFF;
@@ -93,6 +94,7 @@ public class EthernetLayer implements BaseLayer {
 			this.GetUnderLayer().Send(bytes, bytes.length);
 			return true;
 		}
+		
 		/*
 		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
 			
@@ -108,38 +110,53 @@ public class EthernetLayer implements BaseLayer {
 	}
 	
 	public synchronized boolean Receive(byte[] input) {
-		byte[] data;
-		boolean MyPacket, Mine, Broadcast;
-		MyPacket = IsItMyPacket(input);
+		System.out.println("ETHER RECEIVE");
+		byte[] bytes;
+
+		// Determine whether to receive received data frame or not
+		if(!CheckAddress(input)) return false;
 		
-		if(MyPacket == true) {
-			return false;
-		}
-		else {
-			Broadcast = IsItBroadcast(input);
-			if(Broadcast == false) {
-				Mine = IsItMine(input);
-				if(Mine == false) {
-					return false;
-				}
-			}
-		}
-			
-		if(input[12] == 0x00 && input[13] == 0x00) {			// ARP reply 
-			
-			data = RemoveEtherHeader(input, input.length);
-			this.GetUpperLayer(1).Receive(data); 				// ARP Layer
+		System.out.println("address ok!");
+		if(input[20] == 0x00 && input[21] == 0x01) {			// ARP request 
+
+			bytes = RemoveEtherHeader(input, input.length);
+			this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
 			return true;
 		}
 		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
 			
-			data = RemoveEtherHeader(input, input.length);
-			this.GetUpperLayer(0).Receive(data);				// IP Layer
+			bytes = RemoveEtherHeader(input, input.length);
+			this.GetUpperLayer(1).Receive(bytes);				// IP Layer
 			return true;
 		}
 		else
 			return false;
 				
+	}
+	
+public boolean CheckAddress(byte[] packet) {
+		
+		// broadcast 
+		 for (int i = 0; i < 6; i++) { 
+			 if (packet[i] != (byte) 0xFF)  break;
+			 if(i == 5) return true;
+		 }
+		 
+		// 도착지 주소가 내 mac주소인지 : 받은 데이터의 도착지 주소 위치는 input의 인덱스 0부터 5
+		for (int i = 0; i < 6; i++) {
+			if (packet[i] != m_sHeader.enet_srcaddr.addr[i]) {
+				return false;
+			}
+		}
+		
+		// 출발지 주소가 나랑 일대일 통신하는 상대방의 주소가 맞는지
+		for (int i = 6; i < 12; i++) {
+			if (packet[i] != m_sHeader.enet_dstaddr.addr[i - 6]) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	public boolean IsItMyPacket(byte[] input) {
@@ -164,6 +181,7 @@ public class EthernetLayer implements BaseLayer {
 	
 	public boolean IsItBroadcast(byte[] input) {
 		for(int i = 0; i < 6; i++) {
+			System.out.println(input[i]);
 			if(0xFF == input[i]) 
 				continue;
 			else

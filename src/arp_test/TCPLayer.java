@@ -107,9 +107,10 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-		byte[] send = ObjToByte(m_sHeader, input, length);
+	
+		byte[] send = ObjToByte(m_sHeader, input, length); 
 		p_UnderLayer.Send(send, send.length); // IP
-
+		
 		return true;
 	}
 	
@@ -128,7 +129,6 @@ public class TCPLayer implements BaseLayer {
 
 		byte[] data = RemoveIPHeader(input, input.length);
 		
-		// dport ?
 		for (int i = 0; i < 2; i++) {
 			if (input[i] != m_sHeader.tcp_dport.addr[i]) 
 				return false;

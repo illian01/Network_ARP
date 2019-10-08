@@ -154,21 +154,27 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean Send(byte[] input, int length) {
+    	System.out.println("ARP SEND");
         String dst_addr = getDstIPAddr(input);
+        
         if (!cacheTable.containsKey(dst_addr)) {
+        	// Need for implementing that ARP Request
+        	m_sHeader.opcode[0] = 0x00;
+        	m_sHeader.opcode[1] = 0x01;
+        	m_sHeader.arp_data = input;
+        	// Need for implementing that receive mac addr and set mac addr
+        	
+            
+        } else {
         	// Can communication when the ip addr exist in cache
-            String[] token = dst_addr.split(".");
+        	String[] token = dst_addr.split("\\.");
             m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
             m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
             m_sHeader.dst_ip_addr.addr[2] = (byte) Integer.parseInt(token[2]);
             m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
 			m_sHeader.arp_data = input;
-        } else {
-			// Need for implementing that ARP Request
-
-			// Need for implementing that receive mac addr and set mac addr
-
         }
+        
         // Send part(Common part)
 		byte[] msg = ObjToByte(input.length);
 		GetUnderLayer().Send(msg, msg.length);
@@ -177,6 +183,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
+    	System.out.println("ARP RECEIVE");
         return true;
     }
 
