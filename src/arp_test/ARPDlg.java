@@ -154,7 +154,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		contentPane.add(GratuitousARPPanel);
 		GratuitousARPPanel.setLayout(null);
 		
-		JLabel GratuitousARPHWAddressLabel = new JLabel("HW주소");
+		JLabel GratuitousARPHWAddressLabel = new JLabel("HW Address");
 		GratuitousARPHWAddressLabel.setBounds(10, 25, 50, 30);
 		GratuitousARPPanel.add(GratuitousARPHWAddressLabel);
 		
@@ -176,12 +176,12 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		NICComboBox.addActionListener(new setAddressListener());
 		contentPane.add(NICComboBox);//
 		
-		SettingButton = new JButton("설정");
+		SettingButton = new JButton("Setting");
 		SettingButton.setBounds(570, 355, 100, 30);
 		SettingButton.addActionListener(new setAddressListener());
 		contentPane.add(SettingButton);
 		
-		ExitButton = new JButton("종료");
+		ExitButton = new JButton("Quit");
 		ExitButton.setBounds(712, 355, 100, 30);
 		ExitButton.addActionListener(new setAddressListener());
 		contentPane.add(ExitButton);

@@ -128,7 +128,7 @@ public class TCPLayer implements BaseLayer {
 
 		byte[] data = RemoveIPHeader(input, input.length);
 		
-		// dport ?ㄸ
+		// dport ?
 		for (int i = 0; i < 2; i++) {
 			if (input[i] != m_sHeader.tcp_dport.addr[i]) 
 				return false;

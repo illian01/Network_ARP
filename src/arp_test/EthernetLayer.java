@@ -79,7 +79,7 @@ public class EthernetLayer implements BaseLayer {
 		
 		byte[] bytes;
 		
-		// arp frame에서 frame type을 보고 브로드캐스트인지 데이터인지 구분
+		// Judge ARP Request or not as frame_type
 		if(input[6] == 0x00 && input[7] == 0x01) {			// ARP request 
 			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;

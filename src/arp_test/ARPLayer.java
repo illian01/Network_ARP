@@ -155,7 +155,8 @@ public class ARPLayer implements BaseLayer {
 
     public boolean Send(byte[] input, int length) {
         String dst_addr = getDstIPAddr(input);
-        if (!cacheTable.containsKey(dst_addr)) { // 캐시에 존재하여 통신이 가능한 경우
+        if (!cacheTable.containsKey(dst_addr)) {
+        	// Can communication when the ip addr exist in cache
             String[] token = dst_addr.split(".");
             m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
             m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
@@ -163,12 +164,12 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
 			m_sHeader.arp_data = input;
         } else {
-			// ARP Request 요청 구현 필요
+			// Need for implementing that ARP Request
 
-			// IP 주소를 받고 설정하는 부분 구현 필요
+			// Need for implementing that receive mac addr and set mac addr
 
         }
-        // Send는 공통 부분이므로 조건문 밖에 놓음
+        // Send part(Common part)
 		byte[] msg = ObjToByte(input.length);
 		GetUnderLayer().Send(msg, msg.length);
 
