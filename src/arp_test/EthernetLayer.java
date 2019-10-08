@@ -76,12 +76,12 @@ public class EthernetLayer implements BaseLayer {
 	}
 	
 	public boolean Send(byte[] input, int length) {
-		System.out.println("ENETH SEND");
+	
 		byte[] bytes;
 		
 		// Judge ARP Request or not as frame_type
 		if(input[6] == 0x00 && input[7] == 0x01) {			    // ARP request 
-			System.out.println("for ARP request");
+			
 			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[2] = (byte) 0xFF;
@@ -110,13 +110,12 @@ public class EthernetLayer implements BaseLayer {
 	}
 	
 	public synchronized boolean Receive(byte[] input) {
-		System.out.println("ETHER RECEIVE");
+	
 		byte[] bytes;
 
 		// Determine whether to receive received data frame or not
 		if(!CheckAddress(input)) return false;
 		
-		System.out.println("address ok!");
 		if(input[20] == 0x00 && input[21] == 0x01) {			// ARP request 
 
 			bytes = RemoveEtherHeader(input, input.length);
