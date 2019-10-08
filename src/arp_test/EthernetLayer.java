@@ -80,7 +80,7 @@ public class EthernetLayer implements BaseLayer {
 		byte[] bytes;
 		
 		// Judge ARP Request or not as frame_type
-		if(input[6] == 0x00 && input[7] == 0x01) {			// ARP request 
+		if(input[6] == 0x00 && input[7] == 0x01) {			    // ARP request 
 			System.out.println("for ARP request");
 			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;
@@ -91,12 +91,12 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_data = input;
 			
 			bytes = ObjToByte(m_sHeader, input.length, 0);
-			this.GetUnderLayer().Send(bytes, bytes.length);
+			this.GetUnderLayer().Send(bytes, bytes.length);     // NI Layer
 			return true;
 		}
 		
 		/*
-		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
+		else if(input[20] == 0x00 && input[21] == 0x02) {		// data 
 			
 			MakeEthernetFrame(input, 1);
 			bytes = ObjToByte(m_sHeader, input.length, 1);
@@ -123,7 +123,7 @@ public class EthernetLayer implements BaseLayer {
 			this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
 			return true;
 		}
-		else if(input[12] == 0x00 && input[13] == 0x01) {		// data 
+		else if(input[20] == 0x00 && input[21] == 0x02) {		// data 
 			
 			bytes = RemoveEtherHeader(input, input.length);
 			this.GetUpperLayer(1).Receive(bytes);				// IP Layer
@@ -142,53 +142,16 @@ public boolean CheckAddress(byte[] packet) {
 			 if(i == 5) return true;
 		 }
 		 
-		// 도착지 주소가 내 mac주소인지 : 받은 데이터의 도착지 주소 위치는 input의 인덱스 0부터 5
+		// dstaddr == my mac addr ?
 		for (int i = 0; i < 6; i++) {
 			if (packet[i] != m_sHeader.enet_srcaddr.addr[i]) {
 				return false;
 			}
 		}
 		
-		// 출발지 주소가 나랑 일대일 통신하는 상대방의 주소가 맞는지
-		for (int i = 6; i < 12; i++) {
-			if (packet[i] != m_sHeader.enet_dstaddr.addr[i - 6]) {
-				return false;
-			}
-		}
-		
 		return true;
 	}
 	
-	public boolean IsItMyPacket(byte[] input) {
-		for(int i = 0; i < 6; i++) {
-			if(m_sHeader.enet_srcaddr.addr[i] == input[6 + i])
-				continue;
-			else
-				return false;
-		}
-		return true;
-	}
-	
-	public boolean IsItMine(byte[] input) {
-		for(int i = 0; i < 6; i++) {
-			if(m_sHeader.enet_srcaddr.addr[i] == input[i]) 
-				continue;
-			else
-				return false;
-		}
-		return true;
-	}
-	
-	public boolean IsItBroadcast(byte[] input) {
-		for(int i = 0; i < 6; i++) {
-			System.out.println(input[i]);
-			if(0xFF == input[i]) 
-				continue;
-			else
-				return false;
-		}
-		return true;
-	}
 
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
