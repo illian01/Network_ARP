@@ -37,7 +37,7 @@ public class IPLayer implements BaseLayer {
 			this.ip_fragoff = new byte[2];
 			this.ip_ttl = 0x00;
 			this.ip_proto = 0x00;
-			ip_cksum = new byte[2];
+			this.ip_cksum = new byte[2];
 			this.ip_data = null;
 		}
 		
@@ -86,7 +86,6 @@ public class IPLayer implements BaseLayer {
 		byte[] buf = new byte[length + 20];
 
 		buf[0] = Header.ip_verlen;
-		buf[1] = Header.ip_tos;
 		buf[2] = Header.ip_len[0];
 		buf[3] = Header.ip_len[1];
 		buf[4] = Header.ip_id[0];
