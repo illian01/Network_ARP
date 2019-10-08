@@ -79,7 +79,7 @@ public class EthernetLayer implements BaseLayer {
 		
 		byte[] bytes;
 		
-		// arp frame¿¡¼­ frame typeÀ» º¸°í ºê·ÎµåÄ³½ºÆ®ÀÎÁö µ¥ÀÌÅÍÀÎÁö ±¸ºĞ
+		// arp frameì—ì„œ frame typeì„ ë³´ê³  ë¸Œë¡œë“œìºìŠ¤íŠ¸ì¸ì§€ ë°ì´í„°ì¸ì§€ êµ¬ë¶„
 		if(input[6] == 0x00 && input[7] == 0x01) {			// ARP request 
 			m_sHeader.enet_dstaddr.addr[0] = (byte) 0xFF;
 			m_sHeader.enet_dstaddr.addr[1] = (byte) 0xFF;

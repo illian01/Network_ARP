@@ -110,7 +110,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ARPCacheAllDeleteButton.addActionListener(new setAddressListener());
 		ARPCachePanel.add(ARPCacheAllDeleteButton);
 		
-		JLabel ARPCacheIPAddressLabel = new JLabel("IPÁÖ¼Ò");
+		JLabel ARPCacheIPAddressLabel = new JLabel("IPì£¼ì†Œ");
 		ARPCacheIPAddressLabel.setBounds(10, 290, 40, 30);
 		ARPCachePanel.add(ARPCacheIPAddressLabel);
 		
@@ -154,7 +154,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		contentPane.add(GratuitousARPPanel);
 		GratuitousARPPanel.setLayout(null);
 		
-		JLabel GratuitousARPHWAddressLabel = new JLabel("HWÁÖ¼Ò");
+		JLabel GratuitousARPHWAddressLabel = new JLabel("HWì£¼ì†Œ");
 		GratuitousARPHWAddressLabel.setBounds(10, 25, 50, 30);
 		GratuitousARPPanel.add(GratuitousARPHWAddressLabel);
 		
@@ -176,12 +176,12 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		NICComboBox.addActionListener(new setAddressListener());
 		contentPane.add(NICComboBox);//
 		
-		SettingButton = new JButton("¼³Á¤");
+		SettingButton = new JButton("ì„¤ì •");
 		SettingButton.setBounds(570, 355, 100, 30);
 		SettingButton.addActionListener(new setAddressListener());
 		contentPane.add(SettingButton);
 		
-		ExitButton = new JButton("Á¾·á");
+		ExitButton = new JButton("ì¢…ë£Œ");
 		ExitButton.setBounds(712, 355, 100, 30);
 		ExitButton.addActionListener(new setAddressListener());
 		contentPane.add(ExitButton);
