@@ -115,7 +115,7 @@ public class TCPLayer implements BaseLayer {
 	}
 	
 
-	public byte[] RemoveIPHeader(byte[] input, int length) {
+	public byte[] RemoveTCPHeader(byte[] input, int length) {
 		
 		byte[] buf = new byte[length - 24];
 
@@ -127,7 +127,7 @@ public class TCPLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 
-		byte[] data = RemoveIPHeader(input, input.length);
+		byte[] data = RemoveTCPHeader(input, input.length);
 		
 		for (int i = 0; i < 2; i++) {
 			if (input[i] != m_sHeader.tcp_dport.addr[i]) 

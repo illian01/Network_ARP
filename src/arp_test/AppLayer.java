@@ -54,7 +54,7 @@ public class AppLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-		System.out.println("APP SEND");
+	
 		byte[] send;
 		m_sHeader.capp_totlen[0] = (byte) (length/255);
 		m_sHeader.capp_totlen[1] = (byte) (length%255);
