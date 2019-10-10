@@ -271,6 +271,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		return true;
 	}
 
+	public void setARPCacheInputField(JTextField ARPCacheInputField) {
+		this.ARPCacheInputField = ARPCacheInputField;
+	}
+
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		// TODO Auto-generated method stub

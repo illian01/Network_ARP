@@ -10,12 +10,9 @@ public class ARPLayer implements BaseLayer {
     public String pLayerName = null;
     public BaseLayer p_UnderLayer = null;
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-<<<<<<< HEAD
     private Boolean checkARPRequestReceive = false;
-=======
     private static LayerManager m_LayerMgr = new LayerManager();
 
->>>>>>> 26c8dfa0a5a4ce782945065c996beeb5f8eb18b1
     private Map<String, String> cacheTable = new HashMap<>();
 
     private _ARP_Packet m_sHeader = new _ARP_Packet();
@@ -95,7 +92,7 @@ public class ARPLayer implements BaseLayer {
 
     private byte[] ObjToByte() {
         byte[] buf = new byte[28];
-        
+
         buf[0] = m_sHeader.hardware_type[0];
         buf[1] = m_sHeader.hardware_type[1];
         buf[2] = m_sHeader.protocol_type[0];
@@ -124,62 +121,62 @@ public class ARPLayer implements BaseLayer {
         buf[25] = m_sHeader.dst_ip_addr.addr[1];
         buf[26] = m_sHeader.dst_ip_addr.addr[2];
         buf[27] = m_sHeader.dst_ip_addr.addr[3];
-        
+
         return buf;
     }
 
     public boolean Send(byte[] input, int length) {
 
-        String dst_addr = getDstIPAddr(input);
-        if (!cacheTable.containsKey(dst_addr)) {
-        	// ARP Request
-        	String[] token = dst_addr.split("\\.");
+        String dst_ip_addr = getDstIPAddrFromIPFrame(input);
+        if (!cacheTable.containsKey(dst_ip_addr)) {
+            // ARP Request
+            String[] token = dst_ip_addr.split("\\.");
             m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
             m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
             m_sHeader.dst_ip_addr.addr[2] = (byte) Integer.parseInt(token[2]);
             m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
-        	m_sHeader.opcode[0] = 0x00;
-        	m_sHeader.opcode[1] = 0x01;
-        	
-        	byte[] msg = ObjToByte();
-        	GetUnderLayer().Send(msg, msg.length);
-<<<<<<< HEAD
-        	// Receive Dst Mac Address by ARP Request
-        	while(checkARPRequestReceive) {
+            m_sHeader.opcode[0] = 0x00;
+            m_sHeader.opcode[1] = 0x01;
+
+            byte[] msg = ObjToByte();
+            GetUnderLayer().Send(msg, msg.length);
+
+            // Receive Dst Mac Address by ARP Request
+            while (checkARPRequestReceive) { // ARP Reply check
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        	// Load Dst Mac Address from cache table
-            cacheTable.get(getDstIPAddr(input));
-=======
-        	
->>>>>>> 26c8dfa0a5a4ce782945065c996beeb5f8eb18b1
+
+
+            checkARPRequestReceive = false; // set false for next ARP Request
         }
-        
+        // Load Dst Mac Address from cache table
+        String dstMacAddr = cacheTable.get(dst_ip_addr);
+        // Set Dst Mac address to Ethernet Header
+        ((EthernetLayer)GetUnderLayer()).Setenet_srcaddr(dstMacAddr);
+        GetUnderLayer().Send(input, input.length);
+
         return true;
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	
-    	if(input[6] == 0x00 && input[7] == 0x01) { // ARP request
 
-    		// Update if there is no address pair on the table
-    		String ip_toUdate = getSrcIPAddr(input);
-    		if (!cacheTable.containsKey(ip_toUdate)) {
-    			
-    			String mac_toUpate = getSrcMACAddr(input);
-    			cacheTable.put(ip_toUdate, mac_toUpate);
+        if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
 
-    			// Show the cache table to update
-    			//
-    		}
-    		
-    		// Send again by swapping str address and dst address
-    		// Make a new frame 
-    		m_sHeader.dst_ip_addr.addr[0] = input[14];		
+            // Update if there is no address pair on the table
+            String ip_toUdate = getSrcIPAddrFromARPFrame(input);
+            String mac_toUpate = getSrcMACAddrFromARPFrame(input);
+            cacheTable.put(ip_toUdate, mac_toUpate);
+
+            // Show the cache table to update - Need for implement
+
+
+            // Send again by swapping str address and dst address
+            // Make a new frame
+            m_sHeader.dst_ip_addr.addr[0] = input[14];
             m_sHeader.dst_ip_addr.addr[1] = input[15];
             m_sHeader.dst_ip_addr.addr[2] = input[16];
             m_sHeader.dst_ip_addr.addr[3] = input[17];
@@ -193,30 +190,28 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.opcode[1] = 0x02;
 
             byte[] msg = ObjToByte();
-    		GetUnderLayer().Send(msg, msg.length);		// Ethernet Layer
-        	return true;
+            GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+            return true;
 
-    	}
-    	else if(input[6] == 0x00 && input[7] == 0x02) {
-    
-    		// Update if there is no address pair on the table
-    		String ip_toUdate = getSrcIPAddr(input);		
-    		if (!cacheTable.containsKey(ip_toUdate)) {
-    			
-    			String mac_toUpate = getSrcMACAddr(input);
-    			cacheTable.put(ip_toUdate, mac_toUpate);
-	
-    			// Show Updated Cache Table
-    			//
-    		}
+        } else if (input[6] == 0x00 && input[7] == 0x02) {
 
-    		return true;
-    	}else
-    		return false;
-    	
+            // Update cache Table
+            String ip_toUdate = getSrcIPAddrFromARPFrame(input);
+
+            String mac_toUpate = getSrcMACAddrFromARPFrame(input);
+            cacheTable.put(ip_toUdate, mac_toUpate);
+            checkARPRequestReceive = true; // ARP Reply check
+
+            // Show Updated Cache Table(GUI) - Need for implement
+
+
+            return true;
+        } else
+            return false;
+
     }
 
-    private String getDstIPAddr(byte[] input) { // from IP frame
+    private String getDstIPAddrFromIPFrame(byte[] input) { // from IP frame
         byte[] addr = new byte[4];
         String ipAddrStr = new String();
 
@@ -231,13 +226,13 @@ public class ARPLayer implements BaseLayer {
 
         return ipAddrStr;
     }
-    
-    private String getSrcIPAddr(byte[] input) { // from APR frame
+
+    private String getSrcIPAddrFromARPFrame(byte[] arp_header) { // from APR frame
         byte[] addr = new byte[4];
         String ipAddrStr = new String();
 
         for (int i = 0; i < 4; ++i)
-            addr[i] = input[i + 14];
+            addr[i] = arp_header[i + 14];
 
         ipAddrStr += Byte.toUnsignedInt(addr[0]);
         for (int j = 1; j < 4; ++j) {
@@ -247,18 +242,18 @@ public class ARPLayer implements BaseLayer {
 
         return ipAddrStr;
     }
-    
-    private String getSrcMACAddr(byte[] input) { // from ARP frame
+
+    private String getSrcMACAddrFromARPFrame(byte[] arp_header) { // from ARP frame
         byte[] addr = new byte[6];
         String macAddrStr = new String();
 
         for (int i = 0; i < 6; ++i)
-            addr[i] = input[i + 8];
+            addr[i] = arp_header[i + 8];
 
         macAddrStr += Byte.toUnsignedInt(addr[0]);
         for (int j = 1; j < 6; ++j) {
-        	macAddrStr += ":";
-        	macAddrStr += String.format("%02X", Byte.toUnsignedInt(addr[j]));
+            macAddrStr += "-";
+            macAddrStr += String.format("%02X", Byte.toUnsignedInt(addr[j]));
         }
 
         return macAddrStr;
