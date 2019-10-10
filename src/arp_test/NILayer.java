@@ -66,6 +66,7 @@ public class NILayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
+
 		ByteBuffer buf = ByteBuffer.wrap(input);
 		if (m_AdapterObject.sendPacket(buf) != Pcap.OK) {
 			System.err.println(m_AdapterObject.getErr());
@@ -76,6 +77,7 @@ public class NILayer implements BaseLayer {
 	}
 
 	public boolean Receive() {
+		
 		Receive_Thread thread = new Receive_Thread(m_AdapterObject, this.GetUpperLayer(0));
 		Thread obj = new Thread(thread);
 		obj.start();
