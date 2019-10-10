@@ -10,7 +10,7 @@ public class ARPLayer implements BaseLayer {
     public String pLayerName = null;
     public BaseLayer p_UnderLayer = null;
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-
+    private Boolean checkARPRequestReceive = false;
     private Map<String, String> cacheTable = new HashMap<>();
 
     private _ARP_Packet m_sHeader = new _ARP_Packet();
@@ -137,6 +137,16 @@ public class ARPLayer implements BaseLayer {
         	m_sHeader.opcode[1] = 0x01;
         	byte[] msg = ObjToByte();
         	GetUnderLayer().Send(msg, msg.length);
+        	// Receive Dst Mac Address by ARP Request
+        	while(checkARPRequestReceive) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        	// Load Dst Mac Address from cache table
+            cacheTable.get(getDstIPAddr(input));
         }
         
         return true;
