@@ -10,6 +10,7 @@ public class ARPLayer implements BaseLayer {
     public String pLayerName = null;
     public BaseLayer p_UnderLayer = null;
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
+    private static LayerManager m_LayerMgr = new LayerManager();
 
     private Map<String, String> cacheTable = new HashMap<>();
 
@@ -124,7 +125,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean Send(byte[] input, int length) {
-  
+
         String dst_addr = getDstIPAddr(input);
         if (!cacheTable.containsKey(dst_addr)) {
         	// ARP Request
@@ -135,8 +136,10 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
         	m_sHeader.opcode[0] = 0x00;
         	m_sHeader.opcode[1] = 0x01;
+        	
         	byte[] msg = ObjToByte();
         	GetUnderLayer().Send(msg, msg.length);
+        	
         }
         
         return true;
@@ -144,10 +147,59 @@ public class ARPLayer implements BaseLayer {
 
     public synchronized boolean Receive(byte[] input) {
     	
-        return true;
+    	if(input[6] == 0x00 && input[7] == 0x01) { // ARP request
+
+    		// Update if there is no address pair on the table
+    		String ip_toUdate = getSrcIPAddr(input);
+    		if (!cacheTable.containsKey(ip_toUdate)) {
+    			
+    			String mac_toUpate = getSrcMACAddr(input);
+    			cacheTable.put(ip_toUdate, mac_toUpate);
+
+    			// Show the cache table to update
+    			//
+    		}
+    		
+    		// Send again by swapping str address and dst address
+    		// Make a new frame 
+    		m_sHeader.dst_ip_addr.addr[0] = input[14];		
+            m_sHeader.dst_ip_addr.addr[1] = input[15];
+            m_sHeader.dst_ip_addr.addr[2] = input[16];
+            m_sHeader.dst_ip_addr.addr[3] = input[17];
+            m_sHeader.dst_mac_addr.addr[0] = input[8];
+            m_sHeader.dst_mac_addr.addr[1] = input[9];
+            m_sHeader.dst_mac_addr.addr[2] = input[10];
+            m_sHeader.dst_mac_addr.addr[3] = input[11];
+            m_sHeader.dst_mac_addr.addr[4] = input[12];
+            m_sHeader.dst_mac_addr.addr[5] = input[13];
+            m_sHeader.opcode[0] = 0x00;
+            m_sHeader.opcode[1] = 0x02;
+
+            byte[] msg = ObjToByte();
+    		GetUnderLayer().Send(msg, msg.length);		// Ethernet Layer
+        	return true;
+
+    	}
+    	else if(input[6] == 0x00 && input[7] == 0x02) {
+    
+    		// Update if there is no address pair on the table
+    		String ip_toUdate = getSrcIPAddr(input);		
+    		if (!cacheTable.containsKey(ip_toUdate)) {
+    			
+    			String mac_toUpate = getSrcMACAddr(input);
+    			cacheTable.put(ip_toUdate, mac_toUpate);
+	
+    			// Show Updated Cache Table
+    			//
+    		}
+
+    		return true;
+    	}else
+    		return false;
+    	
     }
 
-    private String getDstIPAddr(byte[] input) {
+    private String getDstIPAddr(byte[] input) { // from IP frame
         byte[] addr = new byte[4];
         String ipAddrStr = new String();
 
@@ -162,7 +214,38 @@ public class ARPLayer implements BaseLayer {
 
         return ipAddrStr;
     }
+    
+    private String getSrcIPAddr(byte[] input) { // from APR frame
+        byte[] addr = new byte[4];
+        String ipAddrStr = new String();
 
+        for (int i = 0; i < 4; ++i)
+            addr[i] = input[i + 14];
+
+        ipAddrStr += Byte.toUnsignedInt(addr[0]);
+        for (int j = 1; j < 4; ++j) {
+            ipAddrStr += ".";
+            ipAddrStr += Byte.toUnsignedInt(addr[j]);
+        }
+
+        return ipAddrStr;
+    }
+    
+    private String getSrcMACAddr(byte[] input) { // from ARP frame
+        byte[] addr = new byte[6];
+        String macAddrStr = new String();
+
+        for (int i = 0; i < 6; ++i)
+            addr[i] = input[i + 8];
+
+        macAddrStr += Byte.toUnsignedInt(addr[0]);
+        for (int j = 1; j < 6; ++j) {
+        	macAddrStr += ":";
+        	macAddrStr += String.format("%02X", Byte.toUnsignedInt(addr[j]));
+        }
+
+        return macAddrStr;
+    }
 
     @Override
     public String GetLayerName() {

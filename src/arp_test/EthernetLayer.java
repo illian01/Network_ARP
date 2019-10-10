@@ -44,7 +44,7 @@ public class EthernetLayer implements BaseLayer {
 		pLayerName = pName;
 	}
 	
-	public byte[] ObjToByte(_ETHERNET_Frame Header, int length, int type) {
+	public byte[] ObjToByte(_ETHERNET_Frame Header, int length) {
 		byte[] buf = new byte[length + 14];
 		
 		buf[0] = Header.enet_dstaddr.addr[0];	// DA
@@ -76,7 +76,7 @@ public class EthernetLayer implements BaseLayer {
 	}
 	
 	public boolean Send(byte[] input, int length) {
-	
+
 		byte[] bytes;
 		
 		// Judge ARP Request or not as frame_type
@@ -92,43 +92,61 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_type[1] = (byte) 0x06;
 			m_sHeader.enet_data = input;
 			
-			bytes = ObjToByte(m_sHeader, input.length, 0);
+			bytes = ObjToByte(m_sHeader, input.length);
 			this.GetUnderLayer().Send(bytes, bytes.length);     // NI Layer
 			return true;
 		}
+		else if(input[6] == 0x00 && input[7] == 0x02) {			// ARP reply  
 		
-		/*
-		else if(input[20] == 0x00 && input[21] == 0x02) {		// data 
+			m_sHeader.enet_dstaddr.addr[0] = input[18];
+			m_sHeader.enet_dstaddr.addr[1] = input[19];
+			m_sHeader.enet_dstaddr.addr[2] = input[20];
+			m_sHeader.enet_dstaddr.addr[3] = input[21];
+			m_sHeader.enet_dstaddr.addr[4] = input[22];
+			m_sHeader.enet_dstaddr.addr[5] = input[23];
+			m_sHeader.enet_type[0] = (byte) 0x08;
+			m_sHeader.enet_type[1] = (byte) 0x06;
+			m_sHeader.enet_data = input;
 			
-			MakeEthernetFrame(input, 1);
-			bytes = ObjToByte(m_sHeader, input.length, 1);
-			this.GetUnderLayer().Send(bytes, bytes.length);
+			bytes = ObjToByte(m_sHeader, input.length);
+			this.GetUnderLayer().Send(bytes, bytes.length);     // NI Layer
 			return true;
 		}
+		/* 
+		 * else if() { // data
+		 * 
+		 * MakeEthernetFrame(input, 1); bytes = ObjToByte(m_sHeader, input.length, 1);
+		 * this.GetUnderLayer().Send(bytes, bytes.length); return true; }
+		 */
 		else
 			return false;
-		*/
-		return false;
+		
 	}
 	
 	public synchronized boolean Receive(byte[] input) {
-	
-		byte[] bytes;
+
+		byte[] bytes; 
 
 		// Determine whether to receive received data frame or not
 		if(!CheckAddress(input)) return false;
 		
-		if(input[20] == 0x00 && input[21] == 0x01) {			// ARP request 
-
-			bytes = RemoveEtherHeader(input, input.length);
-			this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
-			return true;
-		}
-		else if(input[20] == 0x00 && input[21] == 0x02) {		// data 
+		if(input[12] == 0x08 && input[13] == 0x06){	// Check enet_type 
 			
-			bytes = RemoveEtherHeader(input, input.length);
-			this.GetUpperLayer(1).Receive(bytes);				// IP Layer
-			return true;
+			if(input[20] == 0x00 && input[21] == 0x01 || input[20] == 0x00 && input[21] == 0x02){	// ARP request & ARP reply
+				
+				bytes = RemoveEtherHeader(input, input.length);
+				this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
+				return true;
+			}
+			/*
+			 * else if() { // data
+			 * 
+			 * bytes = RemoveEtherHeader(input, input.length);
+			 * this.GetUpperLayer(1).Receive(bytes); // IP Layer return true; }
+			 */
+			else
+				return false;
+			
 		}
 		else
 			return false;
