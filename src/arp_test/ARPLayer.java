@@ -171,7 +171,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
+    	//if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
 
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
             // Update if there is no address pair on the table
@@ -183,7 +183,7 @@ public class ARPLayer implements BaseLayer {
                 System.out.println(mac_toUpate);
             }
             // Show the cache table to update - Need for implement
-
+            updateCacheTableGUI();
 
             // Send again by swapping str address and dst address
             // Make a new frame
@@ -219,12 +219,24 @@ public class ARPLayer implements BaseLayer {
             checkARPRequestReceive = true; // ARP Reply check
 
             // Show Updated Cache Table(GUI) - Need for implement
-
+            updateCacheTableGUI();
 
             return true;
         } else
             return false;
 
+    }
+    
+    private void updateCacheTableGUI() {
+    	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
+    	
+    	GUI.ARPCacheTextArea.setText("");
+    	
+    	for(String str : cacheTable.keySet()) {
+    		GUI.ARPCacheTextArea.append(str);
+    		GUI.ARPCacheTextArea.append("\t" + cacheTable.get(str));
+    		GUI.ARPCacheTextArea.append("\tcomplete\n");
+    	}
     }
 
     private boolean isValidIPAddr(byte[] input) {
