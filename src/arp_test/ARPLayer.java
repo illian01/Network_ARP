@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+
 public class ARPLayer implements BaseLayer {
     public int nUpperLayerCount = 0;
     public String pLayerName = null;
@@ -146,7 +150,7 @@ public class ARPLayer implements BaseLayer {
             // Receive Dst Mac Address by ARP Request
             while (!checkARPRequestReceive) { // ARP Reply check
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(5000);
                     ++count;
                     GetUnderLayer().Send(msg, msg.length); // Resend
                     if (count == 10) {
@@ -171,7 +175,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	//if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
+    	if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
 
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
             // Update if there is no address pair on the table
@@ -230,13 +234,12 @@ public class ARPLayer implements BaseLayer {
     private void updateCacheTableGUI() {
     	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
     	
-    	GUI.ARPCacheTextArea.setText("");
-    	
+    	DefaultListModel<String> model = new DefaultListModel<>();
     	for(String str : cacheTable.keySet()) {
-    		GUI.ARPCacheTextArea.append(str);
-    		GUI.ARPCacheTextArea.append("\t" + cacheTable.get(str));
-    		GUI.ARPCacheTextArea.append("\tcomplete\n");
+    		String append = str + "    " + cacheTable.get(str) + "    complete";
+    		model.addElement(append);
     	}
+    	GUI.ARPCacheList.setModel(model);
     }
 
     private boolean isValidIPAddr(byte[] input) {

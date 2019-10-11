@@ -20,10 +20,12 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
@@ -49,7 +51,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	
 	Container contentPane;
 
-	JTextArea ARPCacheTextArea;
+	JList<String> ARPCacheList;
 	JTextArea ProxyARPTextArea;
 	
 	JButton ARPCacheItemDeleteButton;
@@ -96,10 +98,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		contentPane.add(ARPCachePanel);
 		ARPCachePanel.setLayout(null);
 
-		ARPCacheTextArea = new JTextArea();
-		ARPCacheTextArea.setEditable(false);
-		ARPCacheTextArea.setBounds(10, 20, 380, 210);
-		ARPCachePanel.add(ARPCacheTextArea);
+		ARPCacheList = new JList<String>();
+		ARPCacheList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		ARPCacheList.setBounds(10, 20, 380, 210);
+		ARPCachePanel.add(ARPCacheList);
 
 		ARPCacheItemDeleteButton = new JButton("Item Delete");
 		ARPCacheItemDeleteButton.setBounds(40, 240, 150, 40);
@@ -260,15 +262,6 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	}
 
 	public boolean Receive(byte[] input) {
-		ARPCacheTextArea.append("[RECV]:");
-		try {
-			ARPCacheTextArea.append(new String(input, "MS949"));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ARPCacheTextArea.append("\n");
-
 		return true;
 	}
 
