@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+
 public class ARPLayer implements BaseLayer {
     public int nUpperLayerCount = 0;
     public String pLayerName = null;
@@ -146,11 +150,11 @@ public class ARPLayer implements BaseLayer {
             // Receive Dst Mac Address by ARP Request
             while (!checkARPRequestReceive) { // ARP Reply check
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(10000);
                     ++count;
-                    if (count == 100) {
-                        GetUnderLayer().Send(msg, msg.length); // Resend
-                        count = 0;
+                    GetUnderLayer().Send(msg, msg.length); // Resend
+                    if (count == 10) {
+                        return false;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -171,9 +175,9 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
+    	if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
 
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
-            if(checkMyIPAddr(input)) return false;
             // Update if there is no address pair on the table
 
             String ip_toUdate = getSrcIPAddrFromARPFrame(input);
@@ -183,7 +187,7 @@ public class ARPLayer implements BaseLayer {
                 System.out.println(mac_toUpate);
             }
             // Show the cache table to update - Need for implement
-
+            updateCacheTableGUI();
 
             // Send again by swapping str address and dst address
             // Make a new frame
@@ -219,22 +223,41 @@ public class ARPLayer implements BaseLayer {
             checkARPRequestReceive = true; // ARP Reply check
 
             // Show Updated Cache Table(GUI) - Need for implement
-
+            updateCacheTableGUI();
 
             return true;
         } else
             return false;
 
     }
+    
+    private void updateCacheTableGUI() {
+    	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
+    	
+    	DefaultListModel<String> model = new DefaultListModel<>();
+    	for(String str : cacheTable.keySet()) {
+    		String append = str + "    " + cacheTable.get(str) + "    complete";
+    		model.addElement(append);
+    	}
+    	GUI.ARPCacheList.setModel(model);
+    }
 
-    private boolean checkMyIPAddr(byte[] input) {
-        // if src ip equal my ip return ture, else return false
-        for(int index = 0; index < 4; ++index) {
-            if(m_sHeader.src_ip_addr.addr[index] == input[index+14])
+    private boolean isValidIPAddr(byte[] input) {
+        // if src ip equal to my ip -> return false
+        for(int i = 0; i < 4; i++)
+            if(m_sHeader.src_ip_addr.addr[i] != input[i+14])
                 return true;
-        }
 
         return false;
+    }
+    
+    private boolean isValidMACAddr(byte[] input) {
+    	// if src mac equal my mac -> return false
+    	for(int i = 0; i < 6; i++)
+    		if(m_sHeader.src_mac_addr.addr[i] != input[i+8])
+    			return true;
+    	
+    	return false;
     }
 
     private String getDstIPAddrFromIPFrame(byte[] input) { // from IP frame
@@ -361,5 +384,8 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.src_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
     }
 
-
+    public void removeCache(String ipAddr) {
+    	cacheTable.remove(ipAddr);
+    	updateCacheTableGUI();
+    }
 }
