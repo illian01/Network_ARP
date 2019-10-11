@@ -150,7 +150,7 @@ public class ARPLayer implements BaseLayer {
             // Receive Dst Mac Address by ARP Request
             while (!checkARPRequestReceive) { // ARP Reply check
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(10000);
                     ++count;
                     GetUnderLayer().Send(msg, msg.length); // Resend
                     if (count == 10) {
@@ -384,5 +384,8 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.src_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
     }
 
-
+    public void removeCache(String ipAddr) {
+    	cacheTable.remove(ipAddr);
+    	updateCacheTableGUI();
+    }
 }

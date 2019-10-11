@@ -255,8 +255,13 @@ public class ARPDlg extends JFrame implements BaseLayer {
 					SettingButton.setText("Reset");
 					NICComboBox.setEnabled(false);
 				}
-				
-				
+			}
+			else if(e.getSource() == ARPCacheItemDeleteButton) {
+				if(ARPCacheList.isSelectionEmpty()) return;
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				String str = ARPCacheList.getSelectedValue();
+				String[] token = str.split(" ");
+				ARP.removeCache(token[0]);
 			}
 		}
 	}
