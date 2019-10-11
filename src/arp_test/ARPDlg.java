@@ -73,7 +73,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *GUI ) ) ) ) )");
 		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
 		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
-		
+
 	}
 
 	public ARPDlg(String pName) throws SocketException {
@@ -198,6 +198,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				if(SettingButton.getText().equals("Reset") && !ARPCacheInputField.getText().equals("")) {
 					
 					byte[] input = ARPCacheInputField.getText().getBytes();
+					((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(ARPCacheInputField.getText());
 					GetUnderLayer().Send(input, input.length);
 		
 				}
@@ -238,7 +239,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 						src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2]
 								+ "." + token[3].substring(0, token[3].length()-1);
 						System.out.println(src_ip);
-						
+						System.out.println(src_mac);
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
