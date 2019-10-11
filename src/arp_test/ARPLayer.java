@@ -14,6 +14,7 @@ public class ARPLayer implements BaseLayer {
     private static LayerManager m_LayerMgr = new LayerManager();
 
     private Map<String, String> cacheTable = new HashMap<>();
+    private Map<String, String> ProxyARPCacheTable = new HashMap<>();
 
     private _ARP_Packet m_sHeader = new _ARP_Packet();
 
@@ -141,10 +142,16 @@ public class ARPLayer implements BaseLayer {
             byte[] msg = ObjToByte();
             GetUnderLayer().Send(msg, msg.length);
 
+            int count = 0;
             // Receive Dst Mac Address by ARP Request
-            while (checkARPRequestReceive) { // ARP Reply check
+            while (!checkARPRequestReceive) { // ARP Reply check
                 try {
                     Thread.sleep(50);
+                    ++count;
+                    if (count == 100) {
+                        GetUnderLayer().Send(msg, msg.length); // Resend
+                        count = 0;
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -155,9 +162,10 @@ public class ARPLayer implements BaseLayer {
         }
         // Load Dst Mac Address from cache table
         String dstMacAddr = cacheTable.get(dst_ip_addr);
+        System.out.println(dstMacAddr);
         // Set Dst Mac address to Ethernet Header
-        ((EthernetLayer)GetUnderLayer()).Setenet_srcaddr(dstMacAddr);
-        GetUnderLayer().Send(input, input.length);
+//        ((EthernetLayer)GetUnderLayer()).Setenet_dstaddr(dstMacAddr);
+//        GetUnderLayer().Send(input, input.length);
 
         return true;
     }
@@ -167,9 +175,12 @@ public class ARPLayer implements BaseLayer {
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
 
             // Update if there is no address pair on the table
+            if(checkMyIPAddr(input)) return false;
+
             String ip_toUdate = getSrcIPAddrFromARPFrame(input);
             String mac_toUpate = getSrcMACAddrFromARPFrame(input);
-            cacheTable.put(ip_toUdate, mac_toUpate);
+            if (!cacheTable.containsKey(ip_toUdate))
+                cacheTable.put(ip_toUdate, mac_toUpate);
 
             // Show the cache table to update - Need for implement
 
@@ -186,6 +197,8 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.dst_mac_addr.addr[3] = input[11];
             m_sHeader.dst_mac_addr.addr[4] = input[12];
             m_sHeader.dst_mac_addr.addr[5] = input[13];
+//            SetIP_dstaddr(ip_toUdate);
+//            SetMAC_dstaddr(mac_toUpate);
             m_sHeader.opcode[0] = 0x00;
             m_sHeader.opcode[1] = 0x02;
 
@@ -209,6 +222,16 @@ public class ARPLayer implements BaseLayer {
         } else
             return false;
 
+    }
+
+    private boolean checkMyIPAddr(byte[] input) {
+        // if src ip equal my ip return ture, else return false
+        for(int index = 0; index < 4; ++index) {
+            if(m_sHeader.src_ip_addr.addr[index] == input[index+14])
+                return true;
+        }
+
+        return false;
     }
 
     private String getDstIPAddrFromIPFrame(byte[] input) { // from IP frame
@@ -250,7 +273,7 @@ public class ARPLayer implements BaseLayer {
         for (int i = 0; i < 6; ++i)
             addr[i] = arp_header[i + 8];
 
-        macAddrStr += Byte.toUnsignedInt(addr[0]);
+        macAddrStr += String.format("%02X", Byte.toUnsignedInt(addr[0]));
         for (int j = 1; j < 6; ++j) {
             macAddrStr += "-";
             macAddrStr += String.format("%02X", Byte.toUnsignedInt(addr[j]));
