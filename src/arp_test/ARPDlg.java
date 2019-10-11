@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -101,7 +102,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ARPCacheList = new JList<String>();
 		ARPCacheList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		ARPCacheList.setBounds(10, 20, 380, 210);
-		ARPCachePanel.add(ARPCacheList);
+		
+		JScrollPane ARPCachescrollPane = new JScrollPane(ARPCacheList);
+		ARPCachescrollPane.setBounds(10, 20, 380, 210);
+		ARPCachePanel.add(ARPCachescrollPane);
 
 		ARPCacheItemDeleteButton = new JButton("Item Delete");
 		ARPCacheItemDeleteButton.setBounds(40, 240, 150, 40);
