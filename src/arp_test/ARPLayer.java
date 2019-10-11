@@ -146,11 +146,11 @@ public class ARPLayer implements BaseLayer {
             // Receive Dst Mac Address by ARP Request
             while (!checkARPRequestReceive) { // ARP Reply check
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(3000);
                     ++count;
-                    if (count == 100) {
-                        GetUnderLayer().Send(msg, msg.length); // Resend
-                        count = 0;
+                    GetUnderLayer().Send(msg, msg.length); // Resend
+                    if (count == 10) {
+                        return false;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -171,9 +171,9 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
+    	if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
 
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
-            if(checkMyIPAddr(input)) return false;
             // Update if there is no address pair on the table
 
             String ip_toUdate = getSrcIPAddrFromARPFrame(input);
@@ -227,14 +227,22 @@ public class ARPLayer implements BaseLayer {
 
     }
 
-    private boolean checkMyIPAddr(byte[] input) {
-        // if src ip equal my ip return ture, else return false
-        for(int index = 0; index < 4; ++index) {
-            if(m_sHeader.src_ip_addr.addr[index] == input[index+14])
+    private boolean isValidIPAddr(byte[] input) {
+        // if src ip equal to my ip -> return false
+        for(int i = 0; i < 4; i++)
+            if(m_sHeader.src_ip_addr.addr[i] != input[i+14])
                 return true;
-        }
 
         return false;
+    }
+    
+    private boolean isValidMACAddr(byte[] input) {
+    	// if src mac equal my mac -> return false
+    	for(int i = 0; i < 6; i++)
+    		if(m_sHeader.src_mac_addr.addr[i] != input[i+8])
+    			return true;
+    	
+    	return false;
     }
 
     private String getDstIPAddrFromIPFrame(byte[] input) { // from IP frame
