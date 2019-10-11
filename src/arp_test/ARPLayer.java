@@ -173,15 +173,15 @@ public class ARPLayer implements BaseLayer {
     public synchronized boolean Receive(byte[] input) {
 
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
-
-            // Update if there is no address pair on the table
             if(checkMyIPAddr(input)) return false;
+            // Update if there is no address pair on the table
 
             String ip_toUdate = getSrcIPAddrFromARPFrame(input);
             String mac_toUpate = getSrcMACAddrFromARPFrame(input);
-            if (!cacheTable.containsKey(ip_toUdate))
+            if (!cacheTable.containsKey(ip_toUdate)) {
                 cacheTable.put(ip_toUdate, mac_toUpate);
-
+                System.out.println(mac_toUpate);
+            }
             // Show the cache table to update - Need for implement
 
 
@@ -212,7 +212,10 @@ public class ARPLayer implements BaseLayer {
             String ip_toUdate = getSrcIPAddrFromARPFrame(input);
 
             String mac_toUpate = getSrcMACAddrFromARPFrame(input);
-            cacheTable.put(ip_toUdate, mac_toUpate);
+            if(!cacheTable.containsKey(ip_toUdate)) {
+                cacheTable.put(ip_toUdate, mac_toUpate);
+                System.out.println(mac_toUpate);
+            }
             checkARPRequestReceive = true; // ARP Reply check
 
             // Show Updated Cache Table(GUI) - Need for implement
