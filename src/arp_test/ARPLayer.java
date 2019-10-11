@@ -388,4 +388,9 @@ public class ARPLayer implements BaseLayer {
     	cacheTable.remove(ipAddr);
     	updateCacheTableGUI();
     }
+    
+    public void removeCacheAll() {
+    	cacheTable = new HashMap<>();
+    	updateCacheTableGUI();
+    }
 }

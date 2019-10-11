@@ -267,6 +267,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				String[] token = str.split(" ");
 				ARP.removeCache(token[0]);
 			}
+			else if(e.getSource() == ARPCacheAllDeleteButton) {
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				ARP.removeCacheAll();
+			}
 		}
 	}
 
