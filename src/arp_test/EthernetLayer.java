@@ -144,12 +144,11 @@ public class EthernetLayer implements BaseLayer {
 			 * bytes = RemoveEtherHeader(input, input.length);
 			 * this.GetUpperLayer(1).Receive(bytes); // IP Layer return true; }
 			 */
-			else
-				return false;
+
 			
 		}
-		else
-			return false;
+		
+		return false;
 				
 	}
 	
