@@ -286,7 +286,6 @@ public class ARPDlg extends JFrame implements BaseLayer {
 			}
 			else if(e.getSource() == ProxyARPDeleteButton) {
 				if(ProxyARPEntryList.isSelectionEmpty()) return;
-				System.out.println("hi");
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				String str = ProxyARPEntryList.getSelectedValue();
 				String[] token = str.split(" ");
@@ -357,7 +356,6 @@ class ProxyARPWindow extends JFrame {
 	
 	private static LayerManager m_LayerMgr;
 	
-//	private JTextField DeviceInputField;
 	private JTextField IpAddrInputField;
 	private JTextField MACAddrInputField;
 	
@@ -381,15 +379,6 @@ class ProxyARPWindow extends JFrame {
 		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
-//		JLabel 	DeviceLabel = new JLabel("Device");
-//		DeviceLabel.setBounds(20, 20, 80, 30);
-//		contentPane.add(DeviceLabel);
-//		
-//		DeviceInputField = new JTextField();
-//		DeviceInputField.setBounds(110, 20, 230, 30);
-//		DeviceInputField.setHorizontalAlignment(JTextField.CENTER);
-//		contentPane.add(DeviceInputField);
 
 		JLabel 	IPAddrLabel = new JLabel("IP Address");
 		IPAddrLabel.setBounds(20, 70, 80, 30);
