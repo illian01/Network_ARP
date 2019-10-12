@@ -175,17 +175,19 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
+    	
     	if(!isValidIPAddr(input) || !isValidMACAddr(input)) return false;
 
+    	String ip_received = getSrcIPAddrFromARPFrame(input);
+        String mac_received = getSrcMACAddrFromARPFrame(input);
+        
         if (input[6] == 0x00 && input[7] == 0x01) { // ARP request
+        	
             // Update if there is no address pair on the table
-
-            String ip_toUdate = getSrcIPAddrFromARPFrame(input);
-            String mac_toUpate = getSrcMACAddrFromARPFrame(input);
-            if (!cacheTable.containsKey(ip_toUdate)) {
-                cacheTable.put(ip_toUdate, mac_toUpate);
-                System.out.println(mac_toUpate);
+            if (!cacheTable.containsKey(ip_received)) {
+                cacheTable.put(ip_received, mac_received);
             }
+            
             // Show the cache table to update - Need for implement
             updateCacheTableGUI();
 
@@ -202,7 +204,7 @@ public class ARPLayer implements BaseLayer {
             m_sHeader.dst_mac_addr.addr[4] = input[12];
             m_sHeader.dst_mac_addr.addr[5] = input[13];
 //            SetIP_dstaddr(ip_toUdate);
-//            SetMAC_dstaddr(mac_toUpate);
+//            SetMAC_dstaddr(mac_toUpdate);
             m_sHeader.opcode[0] = 0x00;
             m_sHeader.opcode[1] = 0x02;
 
@@ -231,7 +233,8 @@ public class ARPLayer implements BaseLayer {
 
     }
     
-    private void updateCacheTableGUI() {
+    public void updateCacheTableGUI() {
+    	
     	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
     	
     	DefaultListModel<String> model = new DefaultListModel<>();
@@ -241,8 +244,29 @@ public class ARPLayer implements BaseLayer {
     	}
     	GUI.ARPCacheList.setModel(model);
     }
+    
+    public void updateProxyARPCacheTableGUI() {
+    	
+    	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
+    	
+    	DefaultListModel<String> model = new DefaultListModel<>();
+    	for(String str : ProxyARPCacheTable.keySet()) {
+    		String append = str + "        " + ProxyARPCacheTable.get(str);
+    		model.addElement(append);
+    	}
+    	GUI.ProxyARPEntryList.setModel(model);
+    }
+    
+    public void addProxyARPCacheTable(String ipAddr, String macAddr) {
+    	
+    	// input format is xxx.xxx.xxx.xxx and XX:XX:XX:XX:XX:XX
+        if (!ProxyARPCacheTable.containsKey(ipAddr)) {
+        	ProxyARPCacheTable.put(ipAddr, macAddr);
+        }
+    }
 
     private boolean isValidIPAddr(byte[] input) {
+    	
         // if src ip equal to my ip -> return false
         for(int i = 0; i < 4; i++)
             if(m_sHeader.src_ip_addr.addr[i] != input[i+14])
@@ -252,6 +276,7 @@ public class ARPLayer implements BaseLayer {
     }
     
     private boolean isValidMACAddr(byte[] input) {
+    	
     	// if src mac equal my mac -> return false
     	for(int i = 0; i < 6; i++)
     		if(m_sHeader.src_mac_addr.addr[i] != input[i+8])
@@ -261,6 +286,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     private String getDstIPAddrFromIPFrame(byte[] input) { // from IP frame
+    	
         byte[] addr = new byte[4];
         String ipAddrStr = new String();
 
@@ -277,6 +303,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     private String getSrcIPAddrFromARPFrame(byte[] arp_header) { // from APR frame
+    	
         byte[] addr = new byte[4];
         String ipAddrStr = new String();
 
@@ -293,6 +320,7 @@ public class ARPLayer implements BaseLayer {
     }
 
     private String getSrcMACAddrFromARPFrame(byte[] arp_header) { // from ARP frame
+    	
         byte[] addr = new byte[6];
         String macAddrStr = new String();
 
@@ -391,6 +419,11 @@ public class ARPLayer implements BaseLayer {
     
     public void removeCacheAll() {
     	cacheTable = new HashMap<>();
+    	updateCacheTableGUI();
+    }
+    
+    public void removeProxyARPCache(String ipAddr) {
+    	ProxyARPCacheTable.remove(ipAddr);
     	updateCacheTableGUI();
     }
 }
