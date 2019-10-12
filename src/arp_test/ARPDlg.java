@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -53,7 +54,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	Container contentPane;
 
 	JList<String> ARPCacheList;
-	JTextArea ProxyARPTextArea;
+	JList<String> ProxyARPEntryList;
 	
 	JButton ARPCacheItemDeleteButton;
 	JButton ARPCacheAllDeleteButton;
@@ -117,12 +118,13 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ARPCacheAllDeleteButton.addActionListener(new setAddressListener());
 		ARPCachePanel.add(ARPCacheAllDeleteButton);
 		
-		JLabel ARPCacheIPAddressLabel = new JLabel("IP주소");
-		ARPCacheIPAddressLabel.setBounds(10, 290, 40, 30);
+		JLabel ARPCacheIPAddressLabel = new JLabel("IP Address");
+		ARPCacheIPAddressLabel.setBounds(10, 290, 70, 30);
 		ARPCachePanel.add(ARPCacheIPAddressLabel);
 		
 		ARPCacheInputField = new JTextField();
-		ARPCacheInputField.setBounds(55, 290, 260, 30);
+		ARPCacheInputField.setBounds(85, 290, 230, 30);
+		ARPCacheInputField.setHorizontalAlignment(JTextField.CENTER);
 		ARPCachePanel.add(ARPCacheInputField);
 		
 		ARPCacheSendButton = new JButton("Send");
@@ -137,11 +139,15 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ProxyARPEntryPanel.setBounds(415, 5, 400, 250);
 		contentPane.add(ProxyARPEntryPanel);
 		ProxyARPEntryPanel.setLayout(null);
+		
+		ProxyARPEntryList = new JList<String>();
+		ProxyARPEntryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		ProxyARPEntryList.setBounds(10, 20, 380, 170);
+		
+		JScrollPane ProxyARPEntryscrollPane = new JScrollPane(ProxyARPEntryList);
+		ProxyARPEntryscrollPane.setBounds(10, 20, 380, 170);
+		ProxyARPEntryPanel.add(ProxyARPEntryscrollPane);
 
-		ProxyARPTextArea = new JTextArea();
-		ProxyARPTextArea.setEditable(false);
-		ProxyARPTextArea.setBounds(10, 20, 380, 170);
-		ProxyARPEntryPanel.add(ProxyARPTextArea);// src address
 
 		ProxyARPAddButton = new JButton("Add");
 		ProxyARPAddButton.setBounds(40, 200, 150, 40);
@@ -162,11 +168,12 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPPanel.setLayout(null);
 		
 		JLabel GratuitousARPHWAddressLabel = new JLabel("HW Address");
-		GratuitousARPHWAddressLabel.setBounds(10, 25, 50, 30);
+		GratuitousARPHWAddressLabel.setBounds(10, 25, 75, 30);
 		GratuitousARPPanel.add(GratuitousARPHWAddressLabel);
 		
 		GratuitousARPInputField = new JTextField();
-		GratuitousARPInputField.setBounds(60, 25, 255, 30);
+		GratuitousARPInputField.setBounds(95, 25, 220, 30);
+		GratuitousARPInputField.setHorizontalAlignment(JTextField.CENTER);
 		GratuitousARPPanel.add(GratuitousARPInputField);
 		
 		GratuitousARPSendButton = new JButton("Send");
@@ -181,7 +188,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 			NICComboBox.addItem(l.get(i).getDescription() + " : " + l.get(i).getName());
 		NICComboBox.setBounds(10, 355, 550, 30);
 		NICComboBox.addActionListener(new setAddressListener());
-		contentPane.add(NICComboBox);//
+		contentPane.add(NICComboBox);
 		
 		SettingButton = new JButton("Setting");
 		SettingButton.setBounds(570, 355, 100, 30);
@@ -194,7 +201,9 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		contentPane.add(ExitButton);
 		
 		setVisible(true);
+		setResizable(false);
 	}
+
 
 	class setAddressListener implements ActionListener {
 		@Override
@@ -265,11 +274,24 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				String str = ARPCacheList.getSelectedValue();
 				String[] token = str.split(" ");
-				ARP.removeCache(token[0]);
+				ARP.removeCache(token[0]);			// remove item to ARPCache table 
+				ARP.updateCacheTableGUI();			// Show updated ARPCache table 
 			}
 			else if(e.getSource() == ARPCacheAllDeleteButton) {
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				ARP.removeCacheAll();
+			}
+			else if(e.getSource() == ProxyARPAddButton) {
+				new ProxyARPWindow(m_LayerMgr);
+			}
+			else if(e.getSource() == ProxyARPDeleteButton) {
+				if(ProxyARPEntryList.isSelectionEmpty()) return;
+				System.out.println("hi");
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				String str = ProxyARPEntryList.getSelectedValue();
+				String[] token = str.split(" ");
+				ARP.removeProxyARPCache(token[0]);		// remove item to Proxy ARPCache table 
+				ARP.updateProxyARPCacheTableGUI();		// Show updated Proxy ARPCache table 
 			}
 		}
 	}
@@ -328,4 +350,104 @@ public class ARPDlg extends JFrame implements BaseLayer {
 
 	}
 
+}
+
+class ProxyARPWindow extends JFrame {
+	// When 'Add' button was clicked  
+	
+	private static LayerManager m_LayerMgr;
+	
+//	private JTextField DeviceInputField;
+	private JTextField IpAddrInputField;
+	private JTextField MACAddrInputField;
+	
+	Container contentPane;
+
+	JList<String> ARPCacheList;
+	JTextArea ProxyARPTextArea;
+	
+	JButton OKButton;
+	JButton CancelButton;
+
+	
+	public ProxyARPWindow(LayerManager LayerMgr){
+		
+		m_LayerMgr = LayerMgr;
+
+		// ProxyARPWindow window 
+		setTitle("Proxy ARP Entry Add");
+		setBounds(200, 450, 400, 280);
+		contentPane = new JPanel();
+		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+//		JLabel 	DeviceLabel = new JLabel("Device");
+//		DeviceLabel.setBounds(20, 20, 80, 30);
+//		contentPane.add(DeviceLabel);
+//		
+//		DeviceInputField = new JTextField();
+//		DeviceInputField.setBounds(110, 20, 230, 30);
+//		DeviceInputField.setHorizontalAlignment(JTextField.CENTER);
+//		contentPane.add(DeviceInputField);
+
+		JLabel 	IPAddrLabel = new JLabel("IP Address");
+		IPAddrLabel.setBounds(20, 70, 80, 30);
+		contentPane.add(IPAddrLabel);
+		
+		IpAddrInputField = new JTextField();
+		IpAddrInputField.setBounds(110, 70, 230, 30);
+		IpAddrInputField.setHorizontalAlignment(JTextField.CENTER);
+		contentPane.add(IpAddrInputField);
+		
+		JLabel 	MACAddrLabel = new JLabel("MAC Address");
+		MACAddrLabel.setBounds(20, 120, 80, 30);
+		contentPane.add(MACAddrLabel);
+		
+		MACAddrInputField = new JTextField();
+		MACAddrInputField.setBounds(110, 120, 230, 30);
+		MACAddrInputField.setHorizontalAlignment(JTextField.CENTER);
+		contentPane.add(MACAddrInputField);
+		
+		OKButton = new JButton("OK");
+		OKButton.setBounds(85, 190, 100, 30);
+		OKButton.addActionListener(new setAddressListener());
+		contentPane.add(OKButton);
+		
+		CancelButton = new JButton("Cancel");
+		CancelButton.setBounds(205, 190, 100, 30);
+		CancelButton.addActionListener(new setAddressListener());
+		contentPane.add(CancelButton);
+		
+		setVisible(true);
+		setResizable(false);
+
+	}
+	
+	class setAddressListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if(e.getSource() == CancelButton) {
+				 dispose();
+			}
+			else if(e.getSource() == OKButton) {
+				
+				if(!IpAddrInputField.getText().equals("") && !MACAddrInputField.getText().equals("")) {
+					
+					String ip = IpAddrInputField.getText();
+					String mac = MACAddrInputField.getText();
+					
+					((ARPLayer)m_LayerMgr.GetLayer("ARP")).addProxyARPCacheTable(ip, mac);
+					((ARPLayer)m_LayerMgr.GetLayer("ARP")).updateProxyARPCacheTableGUI();
+					
+					dispose();
+				
+				}
+			}
+		}
+		
+	}
+	
 }
