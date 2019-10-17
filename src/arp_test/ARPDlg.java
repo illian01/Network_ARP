@@ -226,10 +226,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				
 				if (SettingButton.getText() == "Reset") {
-					IP.SetIP_srcaddr("");
-					ETH.Setenet_srcaddr("");
-					ARP.SetIP_srcaddr("");
-					ARP.SetMAC_srcaddr("");
+					IP.SetIP_srcaddr("00.00.00.00");
+					ETH.Setenet_srcaddr("00-00-00-00-00-00");
+					ARP.SetIP_srcaddr("00.00.00.00");
+					ARP.SetMAC_srcaddr("00-00-00-00-00-00");
 					NI.SetAdapterNumber(0);
 					SettingButton.setText("Setting");
 					NICComboBox.setEnabled(true);
@@ -291,6 +291,16 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				String[] token = str.split(" ");
 				ARP.removeProxyARPCache(token[0]);		// remove item to Proxy ARPCache table 
 				ARP.updateProxyARPCacheTableGUI();		// Show updated Proxy ARPCache table 
+			}
+			else if(e.getSource() == GratuitousARPSendButton) {
+				if(SettingButton.getText().equals("Reset") && !GratuitousARPInputField.getText().equals("")) {
+					
+					((ARPLayer)m_LayerMgr.GetLayer("ARP")).SetMAC_srcaddr(GratuitousARPInputField.getText());
+					
+					byte[] input = GratuitousARPInputField.getText().getBytes();
+					GetUnderLayer().Send(input, input.length);		// To send a GARP
+					GratuitousARPInputField.setText("");
+				}
 			}
 		}
 	}
