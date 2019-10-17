@@ -86,6 +86,7 @@ public class IPLayer implements BaseLayer {
 		byte[] buf = new byte[length + 20];
 
 		buf[0] = Header.ip_verlen;
+		buf[1] = Header.ip_tos;
 		buf[2] = Header.ip_len[0];
 		buf[3] = Header.ip_len[1];
 		buf[4] = Header.ip_id[0];
@@ -137,9 +138,9 @@ public class IPLayer implements BaseLayer {
 	
 	public void SetIP_dstaddr(String address) {
 		StringTokenizer st = new StringTokenizer(address, ".");
-		
+
 		for(int i = 0; i < 4; i++)
-			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken());
+			m_sHeader.ip_dst.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 	
 	public void SetIP_srcaddr(String address) {
