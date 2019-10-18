@@ -132,18 +132,19 @@ public class ARPLayer implements BaseLayer {
 
     public boolean Send(byte[] input, int length) {
 
-    	if(changeMacAddress) {
-        	// Send GARP request
+		if (changeMacAddress) {
+			
+			// Send GARP request
 			m_sHeader.dst_ip_addr.addr[0] = m_sHeader.src_ip_addr.addr[0];
 			m_sHeader.dst_ip_addr.addr[1] = m_sHeader.src_ip_addr.addr[1];
 			m_sHeader.dst_ip_addr.addr[2] = m_sHeader.src_ip_addr.addr[2];
 			m_sHeader.dst_ip_addr.addr[3] = m_sHeader.src_ip_addr.addr[3];
-			m_sHeader.dst_mac_addr.addr[0] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[1] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[2] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[3] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[4] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[5] = (byte) 0xFF;
+			m_sHeader.dst_mac_addr.addr[0] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[1] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[2] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[3] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[4] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[5] = (byte) 0x00;
 			m_sHeader.opcode[0] = 0x00;
 			m_sHeader.opcode[1] = 0x01;
 
@@ -151,8 +152,25 @@ public class ARPLayer implements BaseLayer {
 			GetUnderLayer().Send(msg, msg.length);
 			changeMacAddress = false;
 			
+
+			// Receive Dst Mac Address by GARP Request
+			checkARPRequestReceive = false;
+			int count = 0;
+			while (!checkARPRequestReceive) { // GARP Reply check
+				try {
+					Thread.sleep(10000);
+					++count;
+					GetUnderLayer().Send(msg, msg.length); // Resend
+					if (count == 10) {
+						return true;						// no reply ?? 
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
 			return true;
-        }
+		}
         
         String dstIP_addr = getDstIPAddrFromIPFrame(input);
         if (!cacheTable.containsKey(dstIP_addr)) {
@@ -163,12 +181,12 @@ public class ARPLayer implements BaseLayer {
 			m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
 			m_sHeader.dst_ip_addr.addr[2] = (byte) Integer.parseInt(token[2]);
 			m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
-			m_sHeader.dst_mac_addr.addr[0] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[1] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[2] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[3] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[4] = (byte) 0xFF;
-			m_sHeader.dst_mac_addr.addr[5] = (byte) 0xFF;
+			m_sHeader.dst_mac_addr.addr[0] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[1] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[2] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[3] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[4] = (byte) 0x00;
+			m_sHeader.dst_mac_addr.addr[5] = (byte) 0x00;
 			m_sHeader.opcode[0] = 0x00;
 			m_sHeader.opcode[1] = 0x01;
 
@@ -205,120 +223,152 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	
-    	if( !isValidIPAddr(input) || !isValidMACAddr(input)) return false;
-    	
-    	if(checkItIsGARP(input)) {									// Receive GARP request
+    	if(!isValidIPAddr(input) && !isValidMACAddr(input)) return false;
+    	else if(isValidMACAddr(input)) {
+    		
+    		if(input[6] == 0x00 && input[7] == 0x01) {
+    			// Receive GARP request
+        		// check IP collision 
+        		if(checkIPCollision(input)) {
+        			
+        			// send GARP reply
+        			m_sHeader.dst_ip_addr.addr[0] = input[14];
+                    m_sHeader.dst_ip_addr.addr[1] = input[15];
+                    m_sHeader.dst_ip_addr.addr[2] = input[16];
+                    m_sHeader.dst_ip_addr.addr[3] = input[17];
+                    m_sHeader.dst_mac_addr.addr[0] = 0x00;
+                    m_sHeader.dst_mac_addr.addr[1] = 0x00;
+                    m_sHeader.dst_mac_addr.addr[2] = 0x00;
+                    m_sHeader.dst_mac_addr.addr[3] = 0x00;
+                    m_sHeader.dst_mac_addr.addr[4] = 0x00;
+                    m_sHeader.dst_mac_addr.addr[5] = 0x00;
+                    m_sHeader.opcode[0] = 0x00;
+                    m_sHeader.opcode[1] = 0x02;
 
-    		String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
-            String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
+                    byte[] msg = ObjToByte();
+                    GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+                    return true;
+        		}
 
-            // Update if there is no address pair on the table
-            if (!cacheTable.containsKey(srcIPAddr_rev)) {
+        		
+        		String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
+                String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
 
-            	cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
-                updateCacheTableGUI();		// Show the cache table to update - Need for implement
-            }
-            // Update the value if there is address pair on the table
-            else {
+                // Update if there is no address pair on the table
+                if (!cacheTable.containsKey(srcIPAddr_rev)) {
 
-            	cacheTable.replace(srcIPAddr_rev, srcMacAddr_rev);
-                updateCacheTableGUI();		// Show the cache table to update - Need for implement
-            }
-            
-            return true;
-    	}
-    	
-    	if (input[6] == 0x00 && input[7] == 0x01) { 				// Receive ARP request
+                	cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
+                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                }
+                // Update the value if there is address pair on the table
+                else {
 
-        	String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
-            String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
-            String dstIPAddr_rev = getDstIPAddrFromARPFrame(input);
-            
-            // Update if there is no address pair on the table
-            if (!cacheTable.containsKey(srcIPAddr_rev)) {
-            	
-                cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
-                updateCacheTableGUI();		// Show the cache table to update - Need for implement
-            }
-            
-            if(checkDstIPAddr(input)) {		
-            	
-            	// This ARP request is mine
-                // Send again by swapping str address and dst address
-                m_sHeader.dst_ip_addr.addr[0] = input[14];
-                m_sHeader.dst_ip_addr.addr[1] = input[15];
-                m_sHeader.dst_ip_addr.addr[2] = input[16];
-                m_sHeader.dst_ip_addr.addr[3] = input[17];
-                m_sHeader.dst_mac_addr.addr[0] = input[8];
-                m_sHeader.dst_mac_addr.addr[1] = input[9];
-                m_sHeader.dst_mac_addr.addr[2] = input[10];
-                m_sHeader.dst_mac_addr.addr[3] = input[11];
-                m_sHeader.dst_mac_addr.addr[4] = input[12];
-                m_sHeader.dst_mac_addr.addr[5] = input[13];
-                m_sHeader.opcode[0] = 0x00;
-                m_sHeader.opcode[1] = 0x02;
-
-                byte[] msg = ObjToByte();
-                GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+                	cacheTable.replace(srcIPAddr_rev, srcMacAddr_rev);
+                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                }
+                
                 return true;
-            	
-            }
-            else if(ProxyARPCacheTable.containsKey(dstIPAddr_rev)){
-
-            	// This ARP request is not mine 
-                // Check Proxy cache table 
-        		byte[] srcIP_tmp = new byte[4];
-        		
-        		srcIP_tmp[0] = m_sHeader.src_ip_addr.addr[0]; // my real ip addr
-        		srcIP_tmp[1] = m_sHeader.src_ip_addr.addr[1];
-        		srcIP_tmp[2] = m_sHeader.src_ip_addr.addr[2];
-        		srcIP_tmp[3] = m_sHeader.src_ip_addr.addr[3];
-
-        		m_sHeader.src_ip_addr.addr[0] = input[24]; // src
-        		m_sHeader.src_ip_addr.addr[1] = input[25];
-        		m_sHeader.src_ip_addr.addr[2] = input[26];
-        		m_sHeader.src_ip_addr.addr[3] = input[27];
-        		m_sHeader.dst_ip_addr.addr[0] = input[14]; // dst
-        		m_sHeader.dst_ip_addr.addr[1] = input[15];
-        		m_sHeader.dst_ip_addr.addr[2] = input[16];
-        		m_sHeader.dst_ip_addr.addr[3] = input[17];
-        		m_sHeader.dst_mac_addr.addr[0] = m_sHeader.src_mac_addr.addr[0];
-        		m_sHeader.dst_mac_addr.addr[1] = m_sHeader.src_mac_addr.addr[1];
-        		m_sHeader.dst_mac_addr.addr[2] = m_sHeader.src_mac_addr.addr[2];
-        		m_sHeader.dst_mac_addr.addr[3] = m_sHeader.src_mac_addr.addr[3];
-        		m_sHeader.dst_mac_addr.addr[4] = m_sHeader.src_mac_addr.addr[4];
-        		m_sHeader.dst_mac_addr.addr[5] = m_sHeader.src_mac_addr.addr[5];
-        		m_sHeader.opcode[0] = 0x00;
-        		m_sHeader.opcode[1] = 0x02;
-
-        		byte[] msg = ObjToByte();
-        		GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
-        		
-        		// Set src_ip to real address
-        		m_sHeader.src_ip_addr.addr[0] = srcIP_tmp[0]; 
-        		m_sHeader.src_ip_addr.addr[1] = srcIP_tmp[1];
-        		m_sHeader.src_ip_addr.addr[2] = srcIP_tmp[2];
-        		m_sHeader.src_ip_addr.addr[3] = srcIP_tmp[3];
+    		}
+    		else if(input[6] == 0x00 && input[7] == 0x02) {
+    			// Receive GARP reply
+    			System.out.println("** IP COLLISION Occurred **");
+        		checkARPRequestReceive = true; // ARP Reply check
         		
         		return true;
-            }
-        } 
-        else if (input[6] == 0x00 && input[7] == 0x02 && !checkARPRequestReceive) {			// Receive ARP reply
+    		}
+    	}
+    	else {
+    		
+    		if(input[6] == 0x00 && input[7] == 0x01) {
+    			// Receive GARP request
+    			String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
+                String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
+                String dstIPAddr_rev = getDstIPAddrFromARPFrame(input);
+                
+                // Update if there is no address pair on the table
+                if (!cacheTable.containsKey(srcIPAddr_rev)) {
+                	
+                    cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
+                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                }
+                
+                if(checkDstIPAddr(input)) {		
+                	
+                	// This ARP request is mine
+                    // Send again by swapping str address and dst address
+                    m_sHeader.dst_ip_addr.addr[0] = input[14];
+                    m_sHeader.dst_ip_addr.addr[1] = input[15];
+                    m_sHeader.dst_ip_addr.addr[2] = input[16];
+                    m_sHeader.dst_ip_addr.addr[3] = input[17];
+                    m_sHeader.dst_mac_addr.addr[0] = input[8];
+                    m_sHeader.dst_mac_addr.addr[1] = input[9];
+                    m_sHeader.dst_mac_addr.addr[2] = input[10];
+                    m_sHeader.dst_mac_addr.addr[3] = input[11];
+                    m_sHeader.dst_mac_addr.addr[4] = input[12];
+                    m_sHeader.dst_mac_addr.addr[5] = input[13];
+                    m_sHeader.opcode[0] = 0x00;
+                    m_sHeader.opcode[1] = 0x02;
 
-            // Update cache Table
-            String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
-            String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
-            if(!cacheTable.containsKey(srcIPAddr_rev)) {
-            	
-                cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
-                updateCacheTableGUI();		// Show the cache table to update - Need for implement
-            }
-            
-            checkARPRequestReceive = true; // ARP Reply check
-            return true;
-        }
-           
+                    byte[] msg = ObjToByte();
+                    GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+                    return true;
+                	
+                }
+                else if(ProxyARPCacheTable.containsKey(dstIPAddr_rev)){
+
+                	// This ARP request is not mine 
+                    // Check Proxy cache table 
+            		byte[] srcIP_tmp = new byte[4];
+            		
+            		srcIP_tmp[0] = m_sHeader.src_ip_addr.addr[0]; // my real ip addr
+            		srcIP_tmp[1] = m_sHeader.src_ip_addr.addr[1];
+            		srcIP_tmp[2] = m_sHeader.src_ip_addr.addr[2];
+            		srcIP_tmp[3] = m_sHeader.src_ip_addr.addr[3];
+
+            		m_sHeader.src_ip_addr.addr[0] = input[24]; // src
+            		m_sHeader.src_ip_addr.addr[1] = input[25];
+            		m_sHeader.src_ip_addr.addr[2] = input[26];
+            		m_sHeader.src_ip_addr.addr[3] = input[27];
+            		m_sHeader.dst_ip_addr.addr[0] = input[14]; // dst
+            		m_sHeader.dst_ip_addr.addr[1] = input[15];
+            		m_sHeader.dst_ip_addr.addr[2] = input[16];
+            		m_sHeader.dst_ip_addr.addr[3] = input[17];
+            		m_sHeader.dst_mac_addr.addr[0] = m_sHeader.src_mac_addr.addr[0];
+            		m_sHeader.dst_mac_addr.addr[1] = m_sHeader.src_mac_addr.addr[1];
+            		m_sHeader.dst_mac_addr.addr[2] = m_sHeader.src_mac_addr.addr[2];
+            		m_sHeader.dst_mac_addr.addr[3] = m_sHeader.src_mac_addr.addr[3];
+            		m_sHeader.dst_mac_addr.addr[4] = m_sHeader.src_mac_addr.addr[4];
+            		m_sHeader.dst_mac_addr.addr[5] = m_sHeader.src_mac_addr.addr[5];
+            		m_sHeader.opcode[0] = 0x00;
+            		m_sHeader.opcode[1] = 0x02;
+
+            		byte[] msg = ObjToByte();
+            		GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+            		
+            		// Set src_ip to real address
+            		m_sHeader.src_ip_addr.addr[0] = srcIP_tmp[0]; 
+            		m_sHeader.src_ip_addr.addr[1] = srcIP_tmp[1];
+            		m_sHeader.src_ip_addr.addr[2] = srcIP_tmp[2];
+            		m_sHeader.src_ip_addr.addr[3] = srcIP_tmp[3];
+            		
+            		return true;
+                }
+    		}
+    		else if(input[6] == 0x00 && input[7] == 0x02) {
+    			// Receive GARP reply
+    			// Update cache Table
+                String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
+                String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
+                if(!cacheTable.containsKey(srcIPAddr_rev)) {
+                	
+                    cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
+                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                }
+                
+                checkARPRequestReceive = true; // ARP Reply check
+                return true;
+    		}
+    	}
         return false;
     }
     
@@ -355,28 +405,15 @@ public class ARPLayer implements BaseLayer {
         	ProxyARPCacheTable.put(ipAddr, macAddr);
         }
     }
-    
-	private boolean checkToSendGARP(byte[] input) {
-		
-		// input is IP frame
-		for (int i = 0; i < 4; i++)
-			if (m_sHeader.src_mac_addr.addr[i] == input[i + 12])
-				return false;
-
-		return true;
-	}
-
-	private boolean checkItIsGARP(byte[] input) {
+	
+	private boolean checkIPCollision(byte[] input) {
 
 		// input is ARP frame
-		// If the src_ip and dst_ip of the input are the same 
+		// If the dst_ip of the input and my IP are the same, collision  
 		for (int i = 0; i < 4; i++)
-			if (input[i+14] != input[i+24])
-				return false;
-		
-		if(input[6] == 0x00 && input[7] == 0x01) // opcode
-			return true;
-		
+			if (m_sHeader.src_mac_addr.addr[i] != input[i + 24])
+				return true;
+
 		return false;
 	}
 
@@ -478,19 +515,6 @@ public class ARPLayer implements BaseLayer {
         }
 
         return macAddrStr;
-    }
-    
-    private byte[] changeMACStringToBytes(String macArrd_str) {
-
-    	byte[] addr = new byte[6];
-    	String[] token = macArrd_str.split("-");
-    	
-    	for(int i=0;i<6;i++) {
-    		Integer hex = Integer.parseInt(token[i], 16);
-    		addr[i] = hex.byteValue();
-    	}
-    	
-    	return addr;
     }
 
     @Override

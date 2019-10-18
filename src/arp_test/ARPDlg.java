@@ -264,7 +264,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 					ARP.SetIP_srcaddr(src_ip);
 					ARP.SetMAC_srcaddr(src_mac);
 					NI.SetAdapterNumber(index);
-					
+
 					SettingButton.setText("Reset");
 					NICComboBox.setEnabled(false);
 				}
@@ -296,6 +296,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				if(SettingButton.getText().equals("Reset") && !GratuitousARPInputField.getText().equals("")) {
 					
 					((ARPLayer)m_LayerMgr.GetLayer("ARP")).SetMAC_srcaddr(GratuitousARPInputField.getText());
+					((ARPLayer)m_LayerMgr.GetLayer("ARP")).ChangeMacAddress();
 					
 					byte[] input = GratuitousARPInputField.getText().getBytes();
 					GetUnderLayer().Send(input, input.length);		// To send a GARP
