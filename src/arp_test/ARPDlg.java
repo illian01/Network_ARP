@@ -186,7 +186,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		contentPane.add(ExitButton);
 		
 		setDefaultCloseOperation(0);
-		setVisible(true);
+		setVisible(false);
 		setResizable(false);
 	}
 

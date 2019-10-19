@@ -1,6 +1,7 @@
 package arp_test;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -203,6 +204,9 @@ public class ChatDlg extends JFrame implements BaseLayer {
 	class setAddressListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			if(e.getSource() == Cache_Table_Button) {
+				((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
+			}
 		}
 	}
 
