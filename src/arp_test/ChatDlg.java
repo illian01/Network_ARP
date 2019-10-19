@@ -205,7 +205,8 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == Cache_Table_Button) {
-				((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
+				if (!(NIC_Setting_Button.getText() == "Setting")) 
+					((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
 			}
 			else if(e.getSource() == NIC_Setting_Button) {
 				
