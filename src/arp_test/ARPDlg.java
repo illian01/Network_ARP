@@ -65,24 +65,9 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	JButton SettingButton;
 	JButton ExitButton;
 
-	public static void main(String[] args) throws SocketException {
-		// TODO Auto-generated method stub
-		m_LayerMgr.AddLayer(new NILayer("NI"));
-		m_LayerMgr.AddLayer(new EthernetLayer("Eth"));
-		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
-		m_LayerMgr.AddLayer(new IPLayer("IP"));
-		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
-		m_LayerMgr.AddLayer(new AppLayer("App"));
-		m_LayerMgr.AddLayer(new ARPDlg("GUI"));
-		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *GUI ) ) ) ) )");
-		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
-		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
-
-	}
-
-	public ARPDlg(String pName) throws SocketException {
+	public ARPDlg(String pName, LayerManager m_LayerMgr) throws SocketException {
 		pLayerName = pName;
-		
+		this.m_LayerMgr = m_LayerMgr;
 		// TestARP window 
 		setTitle("TestARP");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
