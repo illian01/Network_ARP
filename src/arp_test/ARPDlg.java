@@ -289,6 +289,9 @@ public class ARPDlg extends JFrame implements BaseLayer {
 					GratuitousARPInputField.setText("");
 				}
 			}
+			else if(e.getSource() == ExitButton) {
+				setVisible(false);
+			}
 		}
 	}
 
