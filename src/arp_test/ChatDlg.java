@@ -207,6 +207,59 @@ public class ChatDlg extends JFrame implements BaseLayer {
 			if(e.getSource() == Cache_Table_Button) {
 				((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
 			}
+			else if(e.getSource() == NIC_Setting_Button) {
+				
+				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
+				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
+				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				
+				if (NIC_Setting_Button.getText() == "Reset") {
+					IP.SetIP_srcaddr("00.00.00.00");
+					ETH.Setenet_srcaddr("00-00-00-00-00-00");
+					ARP.SetIP_srcaddr("00.00.00.00");
+					ARP.SetMAC_srcaddr("00-00-00-00-00-00");
+					NI.SetAdapterNumber(0);
+					srcMACAddress.setText("");
+					NIC_Setting_Button.setText("Setting");
+					NICComboBox.setEnabled(true);
+				}else {
+					
+					List<PcapIf> l = NI.m_pAdapterList;
+					String src_mac = "";
+					String src_ip = "";
+					int index = NICComboBox.getSelectedIndex();
+					try {
+						byte[] address = l.get(index).getHardwareAddress();
+						int j = 0;
+						for (byte inetAddress : address) {
+							src_mac += String.format("%02x", inetAddress);
+							if (j++ != address.length - 1)
+								src_mac += "-";
+						}
+						
+						List<PcapAddr> addr = l.get(index).getAddresses();
+						String[] token = addr.get(0).getAddr().toString().split("\\.");
+						if(token[0].contains("INET6")) return ;
+						src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2]
+								+ "." + token[3].substring(0, token[3].length()-1);
+						System.out.println(src_ip);
+						System.out.println(src_mac);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					
+					IP.SetIP_srcaddr(src_ip);
+					ETH.Setenet_srcaddr(src_mac);
+					ARP.SetIP_srcaddr(src_ip);
+					ARP.SetMAC_srcaddr(src_mac);
+					NI.SetAdapterNumber(index);
+
+					srcMACAddress.setText(src_mac);
+					NIC_Setting_Button.setText("Reset");
+					NICComboBox.setEnabled(false);
+				}
+			}
 		}
 	}
 

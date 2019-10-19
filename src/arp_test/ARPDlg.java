@@ -166,20 +166,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPSendButton.addActionListener(new setAddressListener());
 		GratuitousARPPanel.add(GratuitousARPSendButton);
 		
-		// Two button on bottom side
-		NICComboBox = new JComboBox<>();
-		List<PcapIf> l = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList;
-		for (int i = 0; i < l.size(); i++)
-			NICComboBox.addItem(l.get(i).getDescription() + " : " + l.get(i).getName());
-		NICComboBox.setBounds(10, 355, 550, 30);
-		NICComboBox.addActionListener(new setAddressListener());
-		contentPane.add(NICComboBox);
-		
-		SettingButton = new JButton("Setting");
-		SettingButton.setBounds(570, 355, 100, 30);
-		SettingButton.addActionListener(new setAddressListener());
-		contentPane.add(SettingButton);
-		
+		// quit button
 		ExitButton = new JButton("Quit");
 		ExitButton.setBounds(712, 355, 100, 30);
 		ExitButton.addActionListener(new setAddressListener());
@@ -202,57 +189,6 @@ public class ARPDlg extends JFrame implements BaseLayer {
 					((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(ARPCacheInputField.getText());
 					GetUnderLayer().Send(input, input.length);
 		
-				}
-			}
-			else if(e.getSource() == SettingButton) {
-				
-				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
-				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
-				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
-				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
-				
-				if (SettingButton.getText() == "Reset") {
-					IP.SetIP_srcaddr("00.00.00.00");
-					ETH.Setenet_srcaddr("00-00-00-00-00-00");
-					ARP.SetIP_srcaddr("00.00.00.00");
-					ARP.SetMAC_srcaddr("00-00-00-00-00-00");
-					NI.SetAdapterNumber(0);
-					SettingButton.setText("Setting");
-					NICComboBox.setEnabled(true);
-				}else {
-					
-					List<PcapIf> l = NI.m_pAdapterList;
-					String src_mac = "";
-					String src_ip = "";
-					int index = NICComboBox.getSelectedIndex();
-					try {
-						byte[] address = l.get(index).getHardwareAddress();
-						int j = 0;
-						for (byte inetAddress : address) {
-							src_mac += String.format("%02x", inetAddress);
-							if (j++ != address.length - 1)
-								src_mac += "-";
-						}
-						
-						List<PcapAddr> addr = l.get(index).getAddresses();
-						String[] token = addr.get(0).getAddr().toString().split("\\.");
-						if(token[0].contains("INET6")) return ;
-						src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2]
-								+ "." + token[3].substring(0, token[3].length()-1);
-						System.out.println(src_ip);
-						System.out.println(src_mac);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					
-					IP.SetIP_srcaddr(src_ip);
-					ETH.Setenet_srcaddr(src_mac);
-					ARP.SetIP_srcaddr(src_ip);
-					ARP.SetMAC_srcaddr(src_mac);
-					NI.SetAdapterNumber(index);
-
-					SettingButton.setText("Reset");
-					NICComboBox.setEnabled(false);
 				}
 			}
 			else if(e.getSource() == ARPCacheItemDeleteButton) {
