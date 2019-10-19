@@ -284,7 +284,9 @@ public class ARPLayer implements BaseLayer {
     			// Receive GARP reply
     			System.out.println("** IP COLLISION Occurred **");
         		checkARPRequestReceive = true; // ARP Reply check
-        		
+        		synchronized(this) {
+                	notifyAll();
+                }
         		return true;
     		}
     	}
