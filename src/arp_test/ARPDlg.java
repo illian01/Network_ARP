@@ -185,7 +185,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 			if(e.getSource() == ARPCacheSendButton) {
 				byte[] input = ARPCacheInputField.getText().getBytes();
 				((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(ARPCacheInputField.getText());
-				GetUnderLayer().Send(input, input.length);
+				GetUnderLayer().Send(null, 0);
 			}
 			else if(e.getSource() == ARPCacheItemDeleteButton) {
 				if(ARPCacheList.isSelectionEmpty()) return;

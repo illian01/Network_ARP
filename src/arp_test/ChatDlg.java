@@ -53,7 +53,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 
 	JTextArea ChattingArea;
 	JTextArea srcMACAddress;
-	JTextArea dstMACAddress;
+	JTextArea dstIPAddress;
 
 	JLabel lblNIC;
 	JLabel lblsrc;
@@ -178,9 +178,9 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		lbldst.setBounds(10, 187, 190, 20);
 		settingPanel.add(lbldst);
 
-		dstMACAddress = new JTextArea();
-		dstMACAddress.setBounds(2, 2, 170, 20);
-		destinationAddressPanel.add(dstMACAddress);
+		dstIPAddress = new JTextArea();
+		dstIPAddress.setBounds(2, 2, 170, 20);
+		destinationAddressPanel.add(dstIPAddress);
 
 		NIC_Setting_Button = new JButton("Setting");
 		NIC_Setting_Button.setBounds(80, 130, 100, 20);
@@ -260,6 +260,14 @@ public class ChatDlg extends JFrame implements BaseLayer {
 					NIC_Setting_Button.setText("Reset");
 					NICComboBox.setEnabled(false);
 				}
+			}
+			else if(e.getSource() == Chat_send_Button) {
+				String text = ChattingWrite.getText();
+				if(text.length() == 0 || NIC_Setting_Button.getText() == "Setting") return;
+				byte[] input = text.getBytes();
+				((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(dstIPAddress.getText());
+				ChattingWrite.setText("");
+				GetUnderLayer().Send(input, input.length);
 			}
 		}
 	}
