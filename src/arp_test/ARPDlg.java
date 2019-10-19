@@ -44,7 +44,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	BaseLayer UnderLayer;
 
-	private static LayerManager m_LayerMgr = new LayerManager();
+	private LayerManager m_LayerMgr = new LayerManager();
 
 	private JTextField ARPCacheInputField;
 	private JTextField GratuitousARPInputField;
@@ -185,6 +185,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ExitButton.addActionListener(new setAddressListener());
 		contentPane.add(ExitButton);
 		
+		setDefaultCloseOperation(0);
 		setVisible(true);
 		setResizable(false);
 	}

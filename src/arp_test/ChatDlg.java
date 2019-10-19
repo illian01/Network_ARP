@@ -46,6 +46,25 @@ public class ChatDlg extends JFrame implements BaseLayer {
 
 	private static LayerManager m_LayerMgr = new LayerManager();
 
+	private JTextField ChattingWrite;
+
+	Container contentPane;
+
+	JTextArea ChattingArea;
+	JTextArea srcMACAddress;
+	JTextArea dstMACAddress;
+
+	JLabel lblNIC;
+	JLabel lblsrc;
+	JLabel lbldst;
+
+	JButton NIC_Setting_Button;
+	JButton Chat_send_Button;
+	JButton Cache_Table_Button;
+
+	static JComboBox<String> NICComboBox;
+
+
 	public static void main(String[] args) throws SocketException {
 		// TODO Auto-generated method stub
 		m_LayerMgr.AddLayer(new NILayer("NI"));
@@ -55,17 +74,131 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
 		m_LayerMgr.AddLayer(new AppLayer("App"));
 		m_LayerMgr.AddLayer(new ARPDlg("ARPGUI", m_LayerMgr));
+		m_LayerMgr.AddLayer(new ChatDlg("ChatGUI"));
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *ARPGUI ) ) ) ) )");
 		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
 		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
-
+		m_LayerMgr.GetLayer("ChatGUI").SetUnderUpperLayer(m_LayerMgr.GetLayer("TCP"));
 	}
 
 	public ChatDlg(String pName) throws SocketException {
 		pLayerName = pName;
-		
-	}
 
+		// Chat window
+		setTitle("Chat");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(250, 250, 644, 425);
+		contentPane = new JPanel();
+		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		pLayerName = pName;
+
+		
+		// Chatting Panel
+		JPanel chattingPanel = new JPanel();
+		chattingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "chatting",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		chattingPanel.setBounds(10, 5, 360, 276);
+		contentPane.add(chattingPanel);
+		chattingPanel.setLayout(null);
+
+		JPanel chattingEditorPanel = new JPanel();
+		chattingEditorPanel.setBounds(10, 15, 340, 210);
+		chattingPanel.add(chattingEditorPanel);
+		chattingEditorPanel.setLayout(null);
+
+		ChattingArea = new JTextArea();
+		ChattingArea.setEditable(false);
+		ChattingArea.setBounds(0, 0, 340, 210);
+		chattingEditorPanel.add(ChattingArea);
+
+		JPanel chattingInputPanel = new JPanel();
+		chattingInputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		chattingInputPanel.setBounds(10, 230, 250, 20);
+		chattingPanel.add(chattingInputPanel);
+		chattingInputPanel.setLayout(null);
+
+		ChattingWrite = new JTextField();
+		ChattingWrite.setBounds(2, 2, 250, 20);
+		chattingInputPanel.add(ChattingWrite);
+		ChattingWrite.setColumns(10);
+
+		
+		// Setting Panel
+		JPanel settingPanel = new JPanel();
+		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		settingPanel.setBounds(380, 5, 236, 371);
+		contentPane.add(settingPanel);
+		settingPanel.setLayout(null);
+
+		JPanel NICPanel = new JPanel();
+		NICPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		NICPanel.setBounds(10, 46, 170, 20);
+		settingPanel.add(NICPanel);
+		NICPanel.setLayout(null);
+
+		lblNIC = new JLabel("NIC");
+		lblNIC.setBounds(10, 25, 170, 20);
+		settingPanel.add(lblNIC);
+
+		NICComboBox = new JComboBox<>();
+		List<PcapIf> l = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList;
+		for (int i = 0; i < l.size(); i++)
+			NICComboBox.addItem(l.get(i).getDescription() + " : " + l.get(i).getName());
+
+		NICComboBox.setBounds(2, 2, 550, 20);
+		NICComboBox.addActionListener(new setAddressListener());
+		NICPanel.add(NICComboBox);// src address
+
+		JPanel sourceAddressPanel = new JPanel();
+		sourceAddressPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		sourceAddressPanel.setBounds(10, 96, 170, 20);
+		settingPanel.add(sourceAddressPanel);
+		sourceAddressPanel.setLayout(null);
+
+		lblsrc = new JLabel("Source Mac Address");
+		lblsrc.setBounds(10, 75, 170, 20);
+		settingPanel.add(lblsrc);
+
+		srcMACAddress = new JTextArea();
+		srcMACAddress.setBounds(2, 2, 170, 20);
+		srcMACAddress.setEnabled(false);
+		sourceAddressPanel.add(srcMACAddress);
+
+		JPanel destinationAddressPanel = new JPanel();
+		destinationAddressPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		destinationAddressPanel.setBounds(10, 212, 170, 20);
+		settingPanel.add(destinationAddressPanel);
+		destinationAddressPanel.setLayout(null);
+
+		lbldst = new JLabel("Destination IP Address");
+		lbldst.setBounds(10, 187, 190, 20);
+		settingPanel.add(lbldst);
+
+		dstMACAddress = new JTextArea();
+		dstMACAddress.setBounds(2, 2, 170, 20);
+		destinationAddressPanel.add(dstMACAddress);
+
+		NIC_Setting_Button = new JButton("Setting");
+		NIC_Setting_Button.setBounds(80, 130, 100, 20);
+		NIC_Setting_Button.addActionListener(new setAddressListener());
+		settingPanel.add(NIC_Setting_Button);
+		
+		Cache_Table_Button = new JButton("Cache Table");
+		Cache_Table_Button.setBounds(10, 270, 170, 20);
+		Cache_Table_Button.addActionListener(new setAddressListener());
+		settingPanel.add(Cache_Table_Button);
+
+		Chat_send_Button = new JButton("Send");
+		Chat_send_Button.setBounds(270, 230, 80, 20);
+		Chat_send_Button.addActionListener(new setAddressListener());
+		chattingPanel.add(Chat_send_Button);
+
+		setVisible(true);
+		setResizable(false);
+	}
 
 	class setAddressListener implements ActionListener {
 		@Override
