@@ -216,9 +216,20 @@ public class ARPLayer implements BaseLayer {
         
         // Set Dst Mac address to Ethernet Header
         ((EthernetLayer)GetUnderLayer()).Setenet_dstaddr(dstMacAddr);
+        
+        synchronized (this) {
+        	if(input.length == 48) {
+        		try {
+					wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+		}
+
         GetUnderLayer().Send(input, input.length);
-
-
+        
         return true;
     }
 
@@ -366,6 +377,10 @@ public class ARPLayer implements BaseLayer {
                 }
                 
                 checkARPRequestReceive = true; // ARP Reply check
+                
+                synchronized(this) {
+                	notifyAll();
+                }
                 return true;
     		}
     	}

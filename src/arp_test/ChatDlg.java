@@ -79,7 +79,9 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.ConnectLayers(" NI ( *Eth ( *ARP +IP ( *TCP ( *App ( *ARPGUI ) ) ) ) )");
 		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
 		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
-		m_LayerMgr.GetLayer("ChatGUI").SetUnderUpperLayer(m_LayerMgr.GetLayer("TCP"));
+		m_LayerMgr.GetLayer("ChatGUI").SetUnderLayer(m_LayerMgr.GetLayer("App"));
+		LayerManager l = m_LayerMgr; 
+		System.out.println();
 	}
 
 	public ChatDlg(String pName) throws SocketException {
