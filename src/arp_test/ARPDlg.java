@@ -214,7 +214,10 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				if(SettingButton.getText().equals("Reset") && !GratuitousARPInputField.getText().equals("")) {
 					
 					((ARPLayer)m_LayerMgr.GetLayer("ARP")).SetMAC_srcaddr(GratuitousARPInputField.getText());
-					((ARPLayer)m_LayerMgr.GetLayer("ARP")).ChangeMacAddress();
+					//((ARPLayer)m_LayerMgr.GetLayer("ARP")).ChangeMacAddress();
+					
+					String src_ip = ((IPLayer)m_LayerMgr.GetLayer("IP")).GetSrcIPAddr();
+					((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(src_ip);
 					
 					byte[] input = GratuitousARPInputField.getText().getBytes();
 					GetUnderLayer().Send(input, input.length);		// To send a GARP

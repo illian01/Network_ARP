@@ -10,6 +10,8 @@ public class IPLayer implements BaseLayer {
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
+	
+	String string_ip_src = "";
 
 
 	private class _IP {		// HEADER + data 
@@ -111,7 +113,6 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-	
 		byte[] send = ObjToByte(m_sHeader, input, length);
 		p_UnderLayer.Send(send, send.length); // ARP
 
@@ -137,14 +138,15 @@ public class IPLayer implements BaseLayer {
 	
 	
 	public void SetIP_dstaddr(String address) {
-		StringTokenizer st = new StringTokenizer(address, ".");
+		StringTokenizer st = new StringTokenizer(address, "\\.");
 
 		for(int i = 0; i < 4; i++)
 			m_sHeader.ip_dst.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 	
 	public void SetIP_srcaddr(String address) {
-		StringTokenizer st = new StringTokenizer(address, ".");
+		this.string_ip_src = address;
+		StringTokenizer st = new StringTokenizer(address, "\\.");
 		
 		for(int i = 0; i < 4; i++)
 			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken());
@@ -197,5 +199,7 @@ public class IPLayer implements BaseLayer {
 		pUULayer.SetUnderLayer(this);
 	}
 
-
+	public String GetSrcIPAddr() {
+		return this.string_ip_src;
+	}
 }
