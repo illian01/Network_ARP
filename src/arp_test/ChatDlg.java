@@ -65,7 +65,6 @@ public class ChatDlg extends JFrame implements BaseLayer {
 
 	static JComboBox<String> NICComboBox;
 
-
 	public static void main(String[] args) throws SocketException {
 		// TODO Auto-generated method stub
 		m_LayerMgr.AddLayer(new NILayer("NI"));
@@ -80,7 +79,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		m_LayerMgr.GetLayer("ARP").SetUnderUpperLayer(m_LayerMgr.GetLayer("Eth"));
 		m_LayerMgr.GetLayer("IP").SetUnderLayer(m_LayerMgr.GetLayer("ARP"));
 		m_LayerMgr.GetLayer("ChatGUI").SetUnderLayer(m_LayerMgr.GetLayer("App"));
-		LayerManager l = m_LayerMgr; 
+		LayerManager l = m_LayerMgr;
 		System.out.println();
 	}
 
@@ -97,7 +96,6 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		contentPane.setLayout(null);
 		pLayerName = pName;
 
-		
 		// Chatting Panel
 		JPanel chattingPanel = new JPanel();
 		chattingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "chatting",
@@ -127,7 +125,6 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		chattingInputPanel.add(ChattingWrite);
 		ChattingWrite.setColumns(10);
 
-		
 		// Setting Panel
 		JPanel settingPanel = new JPanel();
 		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
@@ -188,7 +185,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		NIC_Setting_Button.setBounds(80, 130, 100, 20);
 		NIC_Setting_Button.addActionListener(new setAddressListener());
 		settingPanel.add(NIC_Setting_Button);
-		
+
 		Cache_Table_Button = new JButton("Cache Table");
 		Cache_Table_Button.setBounds(10, 270, 170, 20);
 		Cache_Table_Button.addActionListener(new setAddressListener());
@@ -206,17 +203,16 @@ public class ChatDlg extends JFrame implements BaseLayer {
 	class setAddressListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == Cache_Table_Button) {
-				if (!(NIC_Setting_Button.getText() == "Setting")) 
+			if (e.getSource() == Cache_Table_Button) {
+				if (!(NIC_Setting_Button.getText() == "Setting"))
 					((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
-			}
-			else if(e.getSource() == NIC_Setting_Button) {
-				
+			} else if (e.getSource() == NIC_Setting_Button) {
+
 				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
 				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
 				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
-				
+
 				if (NIC_Setting_Button.getText() == "Reset") {
 					IP.SetIP_srcaddr("00.00.00.00");
 					ETH.Setenet_srcaddr("00-00-00-00-00-00");
@@ -226,8 +222,8 @@ public class ChatDlg extends JFrame implements BaseLayer {
 					srcMACAddress.setText("");
 					NIC_Setting_Button.setText("Setting");
 					NICComboBox.setEnabled(true);
-				}else {
-					
+				} else {
+
 					List<PcapIf> l = NI.m_pAdapterList;
 					String src_mac = "";
 					String src_ip = "";
@@ -240,18 +236,19 @@ public class ChatDlg extends JFrame implements BaseLayer {
 							if (j++ != address.length - 1)
 								src_mac += "-";
 						}
-						
+
 						List<PcapAddr> addr = l.get(index).getAddresses();
 						String[] token = addr.get(0).getAddr().toString().split("\\.");
-						if(token[0].contains("INET6")) return ;
-						src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2]
-								+ "." + token[3].substring(0, token[3].length()-1);
+						if (token[0].contains("INET6"))
+							return;
+						src_ip = token[0].substring(7, token[0].length()) + "." + token[1] + "." + token[2] + "."
+								+ token[3].substring(0, token[3].length() - 1);
 						System.out.println(src_ip);
 						System.out.println(src_mac);
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-					
+
 					IP.SetIP_srcaddr(src_ip);
 					ETH.Setenet_srcaddr(src_mac);
 					ARP.SetIP_srcaddr(src_ip);
@@ -262,19 +259,33 @@ public class ChatDlg extends JFrame implements BaseLayer {
 					NIC_Setting_Button.setText("Reset");
 					NICComboBox.setEnabled(false);
 				}
-			}
-			else if(e.getSource() == Chat_send_Button) {
+			} else if (e.getSource() == Chat_send_Button) {
 				String text = ChattingWrite.getText();
-				if(text.length() == 0 || NIC_Setting_Button.getText() == "Setting") return;
+				if (text.length() == 0 || NIC_Setting_Button.getText() == "Setting")
+					return;
 				byte[] input = text.getBytes();
-				((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(dstIPAddress.getText());
+				((IPLayer) m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(dstIPAddress.getText());
 				ChattingWrite.setText("");
 				GetUnderLayer().Send(input, input.length);
+
+				ChattingArea.append("[SEND] : ");
+				ChattingArea.append(text);
+				ChattingArea.append("\n");
 			}
+
 		}
 	}
 
 	public boolean Receive(byte[] input) {
+		try {
+			ChattingArea.append("[RECV] : ");
+			ChattingArea.append(new String(input, "UTF-8"));
+			ChattingArea.append("\n");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		return true;
 	}
 
