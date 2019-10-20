@@ -183,7 +183,6 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		public void actionPerformed(ActionEvent e) {
 			
 			if(e.getSource() == ARPCacheSendButton) {
-				byte[] input = ARPCacheInputField.getText().getBytes();
 				((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(ARPCacheInputField.getText());
 				GetUnderLayer().Send(null, 0);
 			}
@@ -211,18 +210,16 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				ARP.updateProxyARPCacheTableGUI();		// Show updated Proxy ARPCache table 
 			}
 			else if(e.getSource() == GratuitousARPSendButton) {
-				if(SettingButton.getText().equals("Reset") && !GratuitousARPInputField.getText().equals("")) {
-					
-					((ARPLayer)m_LayerMgr.GetLayer("ARP")).SetMAC_srcaddr(GratuitousARPInputField.getText());
-					//((ARPLayer)m_LayerMgr.GetLayer("ARP")).ChangeMacAddress();
-					
-					String src_ip = ((IPLayer)m_LayerMgr.GetLayer("IP")).GetSrcIPAddr();
-					((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(src_ip);
-					
-					byte[] input = GratuitousARPInputField.getText().getBytes();
-					GetUnderLayer().Send(input, input.length);		// To send a GARP
-					GratuitousARPInputField.setText("");
-				}
+				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
+				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
+				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				
+				String change_mac = GratuitousARPInputField.getText();
+				ETH.Setenet_srcaddr(change_mac);
+				ARP.SetMAC_srcaddr(change_mac);
+				IP.SetIP_dstaddr(IP.GetSrcIPAddr());
+				
+				GetUnderLayer().Send(null, 0);
 			}
 			else if(e.getSource() == ExitButton) {
 				setVisible(false);
