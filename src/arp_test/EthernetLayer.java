@@ -78,7 +78,6 @@ public class EthernetLayer implements BaseLayer {
 	public boolean Send(byte[] input, int length) {
 
 		byte[] bytes;
-		
 		// Judge ARP Request or not as frame_type
 		if(input[6] == 0x00 && input[7] == 0x01) {			    // ARP request 
 			
@@ -138,12 +137,10 @@ public class EthernetLayer implements BaseLayer {
 				this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
 				return true;
 			}
-			/*
-			 * else if() { // data
-			 * 
-			 * bytes = RemoveEtherHeader(input, input.length);
-			 * this.GetUpperLayer(1).Receive(bytes); // IP Layer return true; }
-			 */
+			else {
+				bytes = RemoveEtherHeader(input, input.length);
+				this.GetUpperLayer(1).Receive(bytes); 				// ARP Layer
+			}
 
 			
 		}

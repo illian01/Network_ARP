@@ -16,7 +16,7 @@ public class ARPLayer implements BaseLayer {
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
     private Boolean checkARPRequestReceive = false;
 
-    public boolean changeMacAddress = false;
+    //public boolean changeMacAddress = false;
     private Map<String, String> cacheTable = new HashMap<>();
     private Map<String, String> ProxyARPCacheTable = new HashMap<>();
 
@@ -132,7 +132,7 @@ public class ARPLayer implements BaseLayer {
 
     public boolean Send(byte[] input, int length) {
 
-		if (changeMacAddress) {
+		if (checkIPFrameAddressToGARP(input)) {
 			
 			// Send GARP request
 			m_sHeader.dst_ip_addr.addr[0] = m_sHeader.src_ip_addr.addr[0];
@@ -150,24 +150,17 @@ public class ARPLayer implements BaseLayer {
 
 			byte[] msg = ObjToByte();
 			GetUnderLayer().Send(msg, msg.length);
-			changeMacAddress = false;
+			//changeMacAddress = false;
 			
 
 			// Receive Dst Mac Address by GARP Request
-			checkARPRequestReceive = false;
-			int count = 0;
-			while (!checkARPRequestReceive) { // GARP Reply check
-				try {
-					Thread.sleep(10000);
-					++count;
-					GetUnderLayer().Send(msg, msg.length); // Resend
-					if (count == 10) {
-						return true;						// no reply ?? 
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			/*
+			 * checkARPRequestReceive = false; int count = 0; while
+			 * (!checkARPRequestReceive) { // GARP Reply check try { Thread.sleep(10000);
+			 * ++count; GetUnderLayer().Send(msg, msg.length); // Resend if (count == 10) {
+			 * return true; // no reply ?? } } catch (InterruptedException e) {
+			 * e.printStackTrace(); } }
+			 */
 
 			return true;
 		}
@@ -234,66 +227,71 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-    	if(!isValidIPAddr(input) && !isValidMACAddr(input)) return false;
-    	else if(isValidMACAddr(input)) {
-    		
-    		if(input[6] == 0x00 && input[7] == 0x01) {
-    			// Receive GARP request
-        		// check IP collision 
-        		if(checkIPCollision(input)) {
-        			
-        			// send GARP reply
-        			m_sHeader.dst_ip_addr.addr[0] = input[14];
-                    m_sHeader.dst_ip_addr.addr[1] = input[15];
-                    m_sHeader.dst_ip_addr.addr[2] = input[16];
-                    m_sHeader.dst_ip_addr.addr[3] = input[17];
-                    m_sHeader.dst_mac_addr.addr[0] = 0x00;
-                    m_sHeader.dst_mac_addr.addr[1] = 0x00;
-                    m_sHeader.dst_mac_addr.addr[2] = 0x00;
-                    m_sHeader.dst_mac_addr.addr[3] = 0x00;
-                    m_sHeader.dst_mac_addr.addr[4] = 0x00;
-                    m_sHeader.dst_mac_addr.addr[5] = 0x00;
-                    m_sHeader.opcode[0] = 0x00;
-                    m_sHeader.opcode[1] = 0x02;
+    	
+    	if(!isValidIPAddr(input) && !isValidMACAddr(input)) return false; // 내가 보낸건지 확인 src주소 확인  
+    	
+    	else if(isValidMACAddr(input)) { 
+    		// ARP request, ARP reply, GARP request 
+    		if(checkARPFrameAddressToGARP(input)) {
+    			if(input[6] == 0x00 && input[7] == 0x01) {
+        			// Receive GARP request
+            		// check IP collision 
+            		if(checkIPCollision(input)) {
+            			
+            			// send GARP reply
+            			m_sHeader.dst_ip_addr.addr[0] = input[14];
+                        m_sHeader.dst_ip_addr.addr[1] = input[15];
+                        m_sHeader.dst_ip_addr.addr[2] = input[16];
+                        m_sHeader.dst_ip_addr.addr[3] = input[17];
+                        m_sHeader.dst_mac_addr.addr[0] = 0x00;
+                        m_sHeader.dst_mac_addr.addr[1] = 0x00;
+                        m_sHeader.dst_mac_addr.addr[2] = 0x00;
+                        m_sHeader.dst_mac_addr.addr[3] = 0x00;
+                        m_sHeader.dst_mac_addr.addr[4] = 0x00;
+                        m_sHeader.dst_mac_addr.addr[5] = 0x00;
+                        m_sHeader.opcode[0] = 0x00;
+                        m_sHeader.opcode[1] = 0x02;
 
-                    byte[] msg = ObjToByte();
-                    GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+                        byte[] msg = ObjToByte();
+                        GetUnderLayer().Send(msg, msg.length);        // Ethernet Layer
+                        return true;
+            		}
+
+            		
+            		String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
+                    String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
+
+                    // Update if there is no address pair on the table
+                    if (!cacheTable.containsKey(srcIPAddr_rev)) {
+
+                    	cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
+                        updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                    }
+                    // Update the value if there is address pair on the table
+                    else {
+
+                    	cacheTable.replace(srcIPAddr_rev, srcMacAddr_rev);
+                        updateCacheTableGUI();		// Show the cache table to update - Need for implement
+                    }
+                    
                     return true;
         		}
-
-        		
-        		String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
-                String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
-
-                // Update if there is no address pair on the table
-                if (!cacheTable.containsKey(srcIPAddr_rev)) {
-
-                	cacheTable.put(srcIPAddr_rev, srcMacAddr_rev);
-                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
-                }
-                // Update the value if there is address pair on the table
-                else {
-
-                	cacheTable.replace(srcIPAddr_rev, srcMacAddr_rev);
-                    updateCacheTableGUI();		// Show the cache table to update - Need for implement
-                }
-                
-                return true;
+    			// GARP reply 
+        		if(input[6] == 0x00 && input[7] == 0x02) {
+        			// Receive GARP reply
+        			System.out.println("** IP COLLISION Occurred **");
+            		checkARPRequestReceive = true; // ARP Reply check
+            		synchronized(this) {
+                    	notifyAll();
+                    }
+            		return true;
+        		}
     		}
-    		else if(input[6] == 0x00 && input[7] == 0x02) {
-    			// Receive GARP reply
-    			System.out.println("** IP COLLISION Occurred **");
-        		checkARPRequestReceive = true; // ARP Reply check
-        		synchronized(this) {
-                	notifyAll();
-                }
-        		return true;
-    		}
-    	}
-    	else {
     		
+    		
+    		// ARP request, ARP reply
     		if(input[6] == 0x00 && input[7] == 0x01) {
-    			// Receive GARP request
+    			// Receive ARP request
     			String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
                 String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
                 String dstIPAddr_rev = getDstIPAddrFromARPFrame(input);
@@ -368,7 +366,7 @@ public class ARPLayer implements BaseLayer {
                 }
     		}
     		else if(input[6] == 0x00 && input[7] == 0x02) {
-    			// Receive GARP reply
+    			// Receive ARP reply
     			// Update cache Table
                 String srcIPAddr_rev = getSrcIPAddrFromARPFrame(input);
                 String srcMacAddr_rev = getSrcMACAddrFromARPFrame(input);
@@ -386,6 +384,11 @@ public class ARPLayer implements BaseLayer {
                 return true;
     		}
     	}
+    	else if(!isValidIPAddr(input) && isValidMACAddr(input)) {
+    		
+    	}
+    	
+
         return false;
     }
     
@@ -432,6 +435,25 @@ public class ARPLayer implements BaseLayer {
 				return true;
 
 		return false;
+	}
+	
+	private boolean checkIPFrameAddressToGARP(byte[] input) {
+
+		// if src ip == dst_ip, GARP 
+		for (int i = 0; i < 4; i++)
+			if (input[i+12] != input[i+16])
+				return false;
+
+		return true;
+	}
+	private boolean checkARPFrameAddressToGARP(byte[] input) {
+
+		// if src ip == dst_ip, GARP 
+		for (int i = 0; i < 4; i++)
+			if (input[i+14] != input[i+24])
+				return false;
+
+		return true;
 	}
 
     private boolean isValidIPAddr(byte[] input) {
@@ -625,8 +647,8 @@ public class ARPLayer implements BaseLayer {
     	updateCacheTableGUI();
     }
     
-    public void ChangeMacAddress() {
-    	this.changeMacAddress = true;
-    }
+	/*
+	 * public void ChangeMacAddress() { this.changeMacAddress = true; }
+	 */
 
 }
