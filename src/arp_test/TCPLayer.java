@@ -126,14 +126,7 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Receive(byte[] input) {
-
 		byte[] data = RemoveTCPHeader(input, input.length);
-		
-		for (int i = 0; i < 2; i++) {
-			if (input[i] != m_sHeader.tcp_dport.addr[i]) 
-				return false;
-		}
-		
 		this.GetUpperLayer(0).Receive(data); // GUI
 		return true;
 	}

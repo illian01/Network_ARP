@@ -111,9 +111,7 @@ public class EthernetLayer implements BaseLayer {
 	public synchronized boolean Receive(byte[] input) {
 
 		byte[] bytes; 
-
-		// Determine whether to receive received data frame or not
-		//if(!CheckAddress(input)) return false;
+		if(!CheckAddress(input)) return false;
 		
 		if(input[12] == 0x08 && input[13] == 0x06){				// ARP request & ARP reply
 			bytes = RemoveEtherHeader(input, input.length);

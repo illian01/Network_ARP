@@ -129,7 +129,6 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean Send(byte[] input, int length) {
-        cacheTable.put("123.123.123.123", "12-12-12-12-12-12");
         String dstIP_addr = getDstIPAddrFromIP(input);
         String[] token = dstIP_addr.split("\\.");
         
@@ -186,11 +185,8 @@ public class ARPLayer implements BaseLayer {
     	
     	
     	else {
-    		if(isResponse(input)) 
-    			updateCache(input);
-    		
-    		else if(isTargetMe(input)){
-    			updateCache(input);
+    		updateCache(input);
+    		if(isTargetMe(input)){
     			for(int i = 0; i < 6; i++)
     				m_sHeader.dst_mac_addr.addr[i] = input[10+i];
     			for(int i = 0; i < 4; i++)
