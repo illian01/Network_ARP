@@ -136,7 +136,6 @@ public class IPLayer implements BaseLayer {
 		return true;
 	}
 	
-	
 	public void SetIP_dstaddr(String address) {
 		StringTokenizer st = new StringTokenizer(address, "\\.");
 
@@ -151,7 +150,6 @@ public class IPLayer implements BaseLayer {
 		for(int i = 0; i < 4; i++)
 			m_sHeader.ip_src.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
-
 
 	@Override
 	public String GetLayerName() {

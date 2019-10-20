@@ -213,11 +213,13 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
 				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				ChatDlg CHAT = (ChatDlg) m_LayerMgr.GetLayer("ChatGUI");
 				
 				String change_mac = GratuitousARPInputField.getText();
 				ETH.Setenet_srcaddr(change_mac);
 				ARP.SetMAC_srcaddr(change_mac);
 				IP.SetIP_dstaddr(IP.GetSrcIPAddr());
+				CHAT.srcMACAddress.setText(change_mac);
 				
 				GetUnderLayer().Send(null, 0);
 			}
