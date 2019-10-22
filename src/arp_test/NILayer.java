@@ -61,7 +61,7 @@ public class NILayer implements BaseLayer {
 	public void PacketStartDriver() {
 		int snaplen = 64 * 1024;
 		int flags = Pcap.MODE_PROMISCUOUS;
-		int timeout = 10 * 1000;
+		int timeout = 20 * 1000;
 		m_AdapterObject = Pcap.openLive(m_pAdapterList.get(m_iNumAdapter).getName(), snaplen, flags, timeout, errbuf);
 	}
 

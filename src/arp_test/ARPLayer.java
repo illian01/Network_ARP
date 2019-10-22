@@ -160,9 +160,10 @@ public class ARPLayer implements BaseLayer {
 			
         }
         
-        if(length > 48)
-    		GetUnderLayer().Send(input, input.length);
-      
+        if(length > 48) {
+            ((EthernetLayer)GetUnderLayer()).Setenet_dstaddr(cacheTable.get(dstIP_addr));
+            GetUnderLayer().Send(input, input.length);
+        }
         return true;
     }
 
@@ -188,7 +189,7 @@ public class ARPLayer implements BaseLayer {
     		updateCache(input);
     		if(isTargetMe(input)){
     			for(int i = 0; i < 6; i++)
-    				m_sHeader.dst_mac_addr.addr[i] = input[10+i];
+    				m_sHeader.dst_mac_addr.addr[i] = input[8+i];
     			for(int i = 0; i < 4; i++)
     				m_sHeader.dst_ip_addr.addr[i] = input[14+i];
     			m_sHeader.opcode[1] = 0x02;
@@ -204,6 +205,7 @@ public class ARPLayer implements BaseLayer {
     private void updateCache(byte[] input) {
     	String src_ip = getSrcIPAddrFromARP(input);
 		String src_mac = getSrcMACAddrFromARP(input);
+        System.out.println(src_ip + "   " + src_mac);
 		this.cacheTable.put(src_ip, src_mac);
 		updateCacheTableGUI();
     }
