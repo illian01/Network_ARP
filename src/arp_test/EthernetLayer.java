@@ -104,8 +104,10 @@ public class EthernetLayer implements BaseLayer {
 		}
 		 
 		bytes = ObjToByte(m_sHeader, input.length);
-		this.GetUnderLayer().Send(bytes, bytes.length); 
-		return true;
+		if(this.GetUnderLayer().Send(bytes, bytes.length))
+			return true;
+		else 
+			return false;
 	}
 	
 	public synchronized boolean Receive(byte[] input) {

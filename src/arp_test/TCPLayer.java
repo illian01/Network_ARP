@@ -108,9 +108,10 @@ public class TCPLayer implements BaseLayer {
 	public boolean Send(byte[] input, int length) {
 	
 		byte[] send = ObjToByte(m_sHeader, input, length); 
-		p_UnderLayer.Send(send, send.length); // IP
-		
-		return true;
+		if(p_UnderLayer.Send(send, send.length)) // IP
+			return true;
+		else
+			return false;
 	}
 	
 

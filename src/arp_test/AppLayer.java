@@ -58,8 +58,10 @@ public class AppLayer implements BaseLayer {
 		m_sHeader.capp_totlen[1] = (byte) (length % 256);
 
 		send = ObjToByte(m_sHeader, input, length);
-		p_UnderLayer.Send(send, send.length);
-		return true;
+		if(p_UnderLayer.Send(send, send.length))
+			return true;
+		else
+			return false;
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
