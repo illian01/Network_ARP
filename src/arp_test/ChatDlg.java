@@ -16,9 +16,12 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
@@ -101,7 +104,10 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		ChattingArea = new JTextArea();
 		ChattingArea.setEditable(false);
 		ChattingArea.setBounds(0, 0, 340, 210);
-		chattingEditorPanel.add(ChattingArea);
+		
+		JScrollPane ARPCachescrollPane = new JScrollPane(ChattingArea);
+		ARPCachescrollPane.setBounds(0, 0, 340, 210);
+		chattingEditorPanel.add(ARPCachescrollPane);
 
 		JPanel chattingInputPanel = new JPanel();
 		chattingInputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
