@@ -132,29 +132,9 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Receive(byte[] input) {
-
-		if(!CheckAddress(input)) return false;
-		if(input[0] != 0x04) return false;
 		
 		byte[] data = RemoveIPHeader(input, input.length);
 		this.GetUpperLayer(0).Receive(data); // TCP
-		return true;
-	}
-	
-	public boolean CheckAddress(byte[] packet) {
-		
-		// srcaddr == my ip addr -> false
-		for (int i = 0; i < 4; i++) {
-			if(packet[i+12] != m_sHeader.ip_src.addr[i]) break;
-			if(i == 5) return false;
-		}
-
-		// dstaddr != my ip addr -> false
-		for (int i = 0; i < 4; i++) {
-			if(packet[i+16] != m_sHeader.ip_src.addr[i])
-				return false;
-		}
-		
 		return true;
 	}
 	
