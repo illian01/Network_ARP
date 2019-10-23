@@ -71,7 +71,7 @@ public class IPLayer implements BaseLayer {
 			m_sHeader.ip_dst.addr[i] =  0x00;
 		}
 		
-		m_sHeader.ip_verlen = 0x00;
+		m_sHeader.ip_verlen = 0x04;
 		m_sHeader.ip_tos = 0x00;
 		m_sHeader.ip_len[0] = 0x00;
 		m_sHeader.ip_len[1] = 0x00;
@@ -134,6 +134,7 @@ public class IPLayer implements BaseLayer {
 	public synchronized boolean Receive(byte[] input) {
 
 		if(!CheckAddress(input)) return false;
+		if(input[0] != 0x04) return false;
 		
 		byte[] data = RemoveIPHeader(input, input.length);
 		this.GetUpperLayer(0).Receive(data); // TCP
