@@ -279,7 +279,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		}
 	}
 
-	public boolean Receive(byte[] input) {
+	public synchronized boolean Receive(byte[] input) {
 		try {
 			ChattingArea.append("[RECV] : ");
 			ChattingArea.append(new String(input, "UTF-8"));

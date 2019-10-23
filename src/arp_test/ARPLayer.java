@@ -126,7 +126,7 @@ public class ARPLayer implements BaseLayer {
         return buf;
     }
 
-    public boolean Send(byte[] input, int length) {
+    public synchronized boolean Send(byte[] input, int length) {
         String dstIP_addr = getDstIPAddrFromIP(input);
         String[] token = dstIP_addr.split("\\.");
         
@@ -149,7 +149,7 @@ public class ARPLayer implements BaseLayer {
 			try {
     			int n = 0;
     			while(!cacheTable.containsKey(dstIP_addr)) {
-    				Thread.sleep(3000);
+    				Thread.sleep(500);
     				if(n++ == 5) return false;
     			}
     		} catch (InterruptedException e) {

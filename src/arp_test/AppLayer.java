@@ -51,17 +51,12 @@ public class AppLayer implements BaseLayer {
 		return buf;
 	}
 
-	public boolean Send(byte[] input, int length) {
-
-		byte[] send;
-		m_sHeader.capp_totlen[0] = (byte) (length / 256);
-		m_sHeader.capp_totlen[1] = (byte) (length % 256);
-
-		send = ObjToByte(m_sHeader, input, length);
-		if(p_UnderLayer.Send(send, send.length))
-			return true;
-		else
-			return false;
+	public synchronized boolean Send(byte[] input, int length) {
+		Send_Thread thread = new Send_Thread(input, length);
+		Thread send = new Thread(thread);
+		send.start();
+		
+		return true;
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
@@ -82,6 +77,23 @@ public class AppLayer implements BaseLayer {
 		data = RemoveCappHeader(input, input.length);
 		this.GetUpperLayer(1).Receive(data);
 		return true;
+	}
+	
+	class Send_Thread implements Runnable { // Send Thread
+		byte[] sendData; // data for sending
+	
+		public Send_Thread(byte[] input, int length) {
+			m_sHeader.capp_totlen[0] = (byte) (length / 256);
+			m_sHeader.capp_totlen[1] = (byte) (length % 256);
+
+			sendData = ObjToByte(m_sHeader, input, length);
+		}
+		
+		public void run() {
+			while(true) {
+				p_UnderLayer.Send(sendData, sendData.length);
+			}
+		}
 	}
 
 	@Override
@@ -129,5 +141,5 @@ public class AppLayer implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
-
+	
 }
