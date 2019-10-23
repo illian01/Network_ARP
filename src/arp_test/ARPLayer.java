@@ -149,7 +149,7 @@ public class ARPLayer implements BaseLayer {
 			try {
     			int n = 0;
     			while(!cacheTable.containsKey(dstIP_addr)) {
-    				Thread.sleep(300);
+    				Thread.sleep(3000);
     				if(n++ == 5) return false;
     			}
     		} catch (InterruptedException e) {
