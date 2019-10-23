@@ -7,34 +7,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 
@@ -95,6 +84,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		contentPane.setLayout(null);
 		pLayerName = pName;
 
+		
 		// Chatting Panel
 		JPanel chattingPanel = new JPanel();
 		chattingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "chatting",
@@ -124,6 +114,7 @@ public class ChatDlg extends JFrame implements BaseLayer {
 		chattingInputPanel.add(ChattingWrite);
 		ChattingWrite.setColumns(10);
 
+		
 		// Setting Panel
 		JPanel settingPanel = new JPanel();
 		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
@@ -205,7 +196,9 @@ public class ChatDlg extends JFrame implements BaseLayer {
 			if (e.getSource() == Cache_Table_Button) {
 				if (!(NIC_Setting_Button.getText() == "Setting"))
 					((Component) m_LayerMgr.GetLayer("ARPGUI")).setVisible(true);
-			} else if (e.getSource() == NIC_Setting_Button) {
+			} 
+			
+			else if (e.getSource() == NIC_Setting_Button) {
 
 				NILayer NI = (NILayer) m_LayerMgr.GetLayer("NI");
 				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
@@ -258,7 +251,9 @@ public class ChatDlg extends JFrame implements BaseLayer {
 					NIC_Setting_Button.setText("Reset");
 					NICComboBox.setEnabled(false);
 				}
-			} else if (e.getSource() == Chat_send_Button) {
+			} 
+			
+			else if (e.getSource() == Chat_send_Button) {
 				String text = ChattingWrite.getText();
 				if (text.length() == 0 || NIC_Setting_Button.getText() == "Setting")
 					return;
@@ -271,7 +266,6 @@ public class ChatDlg extends JFrame implements BaseLayer {
 				ChattingArea.append(text);
 				ChattingArea.append("\n");
 			}
-
 		}
 	}
 
@@ -281,7 +275,6 @@ public class ChatDlg extends JFrame implements BaseLayer {
 			ChattingArea.append(new String(input, "UTF-8"));
 			ChattingArea.append("\n");
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

@@ -99,7 +99,7 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_dstaddr.addr[4] = input[22];
 			m_sHeader.enet_dstaddr.addr[5] = input[23];
 		}
-		else { // data
+		else { 													// data
 			m_sHeader.enet_type[1] = (byte) 0x00;
 		}
 		 
@@ -115,7 +115,7 @@ public class EthernetLayer implements BaseLayer {
 		
 		if(input[12] == 0x08 && input[13] == 0x06){				// ARP request & ARP reply
 			bytes = RemoveEtherHeader(input, input.length);
-			this.GetUpperLayer(0).Receive(bytes); 				// ARP Layer
+			this.GetUpperLayer(0).Receive(bytes);
 			return true;
 		}
 		else if(input[12] == 0x08 && input[13] == 0x00) {		// IPv4

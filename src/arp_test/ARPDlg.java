@@ -4,38 +4,23 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-
-import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapAddr;
-import org.jnetpcap.PcapIf;
 
 public class ARPDlg extends JFrame implements BaseLayer {
 	public int nUpperLayerCount = 0;
@@ -68,14 +53,17 @@ public class ARPDlg extends JFrame implements BaseLayer {
 	public ARPDlg(String pName, LayerManager m_LayerMgr) throws SocketException {
 		pLayerName = pName;
 		this.m_LayerMgr = m_LayerMgr;
+		
+		
 		// TestARP window 
-		setTitle("TestARP");
+		setTitle("ARP");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(250, 250, 837, 450);
 		contentPane = new JPanel();
 		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
 
 		// ARP Cache part
 		JPanel ARPCachePanel = new JPanel();
@@ -96,7 +84,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ARPCacheItemDeleteButton = new JButton("Item Delete");
 		ARPCacheItemDeleteButton.setBounds(40, 240, 150, 40);
 		ARPCacheItemDeleteButton.addActionListener(new setAddressListener());
-		ARPCachePanel.add(ARPCacheItemDeleteButton);// chatting send button
+		ARPCachePanel.add(ARPCacheItemDeleteButton);
 		
 		ARPCacheAllDeleteButton = new JButton("All Delete");
 		ARPCacheAllDeleteButton.setBounds(210, 240, 150, 40);
@@ -116,6 +104,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ARPCacheSendButton.setBounds(320, 290, 70, 30);
 		ARPCacheSendButton.addActionListener(new setAddressListener());
 		ARPCachePanel.add(ARPCacheSendButton);
+		
 		
 		// Proxy ARP Entry part
 		JPanel ProxyARPEntryPanel = new JPanel();
@@ -137,12 +126,13 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		ProxyARPAddButton = new JButton("Add");
 		ProxyARPAddButton.setBounds(40, 200, 150, 40);
 		ProxyARPAddButton.addActionListener(new setAddressListener());
-		ProxyARPEntryPanel.add(ProxyARPAddButton);// chatting send button
+		ProxyARPEntryPanel.add(ProxyARPAddButton);
 		
 		ProxyARPDeleteButton = new JButton("Delete");
 		ProxyARPDeleteButton.setBounds(210, 200, 150, 40);
 		ProxyARPDeleteButton.addActionListener(new setAddressListener());
 		ProxyARPEntryPanel.add(ProxyARPDeleteButton);
+		
 		
 		// Gratuitous ARP part
 		JPanel GratuitousARPPanel = new JPanel();
@@ -166,6 +156,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 		GratuitousARPSendButton.addActionListener(new setAddressListener());
 		GratuitousARPPanel.add(GratuitousARPSendButton);
 		
+		
 		// quit button
 		ExitButton = new JButton("Quit");
 		ExitButton.setBounds(712, 355, 100, 30);
@@ -186,6 +177,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				((IPLayer)m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(ARPCacheInputField.getText());
 				GetUnderLayer().Send(null, 0);
 			}
+			
 			else if(e.getSource() == ARPCacheItemDeleteButton) {
 				if(ARPCacheList.isSelectionEmpty()) return;
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
@@ -194,13 +186,16 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				ARP.removeCache(token[0]);			// remove item to ARPCache table 
 				ARP.updateCacheTableGUI();			// Show updated ARPCache table 
 			}
+			
 			else if(e.getSource() == ARPCacheAllDeleteButton) {
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				ARP.removeCacheAll();
 			}
+			
 			else if(e.getSource() == ProxyARPAddButton) {
 				new ProxyARPWindow(m_LayerMgr);
 			}
+			
 			else if(e.getSource() == ProxyARPDeleteButton) {
 				if(ProxyARPEntryList.isSelectionEmpty()) return;
 				ARPLayer ARP = (ARPLayer) m_LayerMgr.GetLayer("ARP");
@@ -209,6 +204,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				ARP.removeProxyARPCache(token[0]);		// remove item to Proxy ARPCache table 
 				ARP.updateProxyARPCacheTableGUI();		// Show updated Proxy ARPCache table 
 			}
+			
 			else if(e.getSource() == GratuitousARPSendButton) {
 				IPLayer IP = (IPLayer) m_LayerMgr.GetLayer("IP");
 				EthernetLayer ETH = (EthernetLayer) m_LayerMgr.GetLayer("Eth");
@@ -223,6 +219,7 @@ public class ARPDlg extends JFrame implements BaseLayer {
 				
 				GetUnderLayer().Send(null, 0);
 			}
+			
 			else if(e.getSource() == ExitButton) {
 				setVisible(false);
 			}

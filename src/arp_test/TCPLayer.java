@@ -2,7 +2,6 @@ package arp_test;
 
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 
 public class TCPLayer implements BaseLayer {

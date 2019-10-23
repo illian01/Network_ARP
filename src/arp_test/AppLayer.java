@@ -27,8 +27,6 @@ public class AppLayer implements BaseLayer {
 	_CHAT_APP m_sHeader = new _CHAT_APP();
 
 	public AppLayer(String pName) {
-		// super(pName);
-		// TODO Auto-generated constructor stub
 		pLayerName = pName;
 		ResetHeader();
 	}
@@ -75,7 +73,7 @@ public class AppLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 		
-		int totalLength = (input[0] & 0xFF) * 256 | (input[1] & 0XFF);
+		int totalLength = (input[0] & 0xFF) * 256 | (input[1] & 0xFF);
 		if (totalLength != input.length - 4) return false;
 		
 		byte[] data;

@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 
 public class ARPLayer implements BaseLayer {
     public int nUpperLayerCount = 0;
