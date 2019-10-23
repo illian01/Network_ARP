@@ -267,12 +267,12 @@ public class ChatDlg extends JFrame implements BaseLayer {
 				((IPLayer) m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(dstIPAddress.getText());
 				ChattingWrite.setText("");
 				if(GetUnderLayer().Send(input, input.length)) {
-					ChattingArea.append("[SEND] : ");
-					ChattingArea.append("\n");
-					ChattingArea.append(text);					
+					ChattingArea.append("[SEND      to "+ dstIPAddress.getText() +"] : ");
+					ChattingArea.append(text);
+					ChattingArea.append("\n");			
 				}
 				else
-					ChattingArea.append("[SEND] : SEND FAILED\n");
+					ChattingArea.append("[SEND] : SEND FAILED\n"); // Time-Out
 				
 
 			}
@@ -281,8 +281,27 @@ public class ChatDlg extends JFrame implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 		try {
-			ChattingArea.append("[RECV] : ");
-			ChattingArea.append(new String(input, "UTF-8"));
+			int index = 0;
+			
+			byte[] fromIPAddr = new byte[4];
+			byte[] chatData = new byte[input.length - 4];
+			
+			for(; index < input.length-4; ++index) {
+				chatData[index] = input[index];
+			}
+			
+			for(int ipIndex = 0; index < input.length; ++ipIndex,++index) {
+				fromIPAddr[ipIndex] = input[index];
+			}
+			
+			ChattingArea.append("[RECV from " );
+						
+			ChattingArea.append(Integer.toString((fromIPAddr[0] & 0xFF)) + "."
+					+ Integer.toString((fromIPAddr[1] & 0xFF)) + "."
+					+ Integer.toString((fromIPAddr[2] & 0xFF)) + "."
+					+ Integer.toString((fromIPAddr[3] & 0xFF)));
+			ChattingArea.append("] :" );
+			ChattingArea.append(new String(chatData, "UTF-8"));
 			ChattingArea.append("\n");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

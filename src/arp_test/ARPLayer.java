@@ -126,13 +126,8 @@ public class ARPLayer implements BaseLayer {
         return buf;
     }
 
-<<<<<<< HEAD
     public synchronized boolean Send(byte[] input, int length) {
         String dstIP_addr = getDstIPAddrFromIP(input);
-=======
-    public boolean Send(byte[] input, int length) {
-    	String dstIP_addr = getDstIPAddrFromIP(input);
->>>>>>> 64ecf1dcae6e956adba8d314a279edd8ad6e4b6e
         String[] token = dstIP_addr.split("\\.");
         
         if(isGratuitousSend(input) || !cacheTable.containsKey(dstIP_addr)) {
@@ -154,7 +149,7 @@ public class ARPLayer implements BaseLayer {
 			try {
     			int n = 0;
     			while(!cacheTable.containsKey(dstIP_addr)) {
-    				Thread.sleep(500);
+    				Thread.sleep(1000);
     				if(n++ == 5) return false;
     			}
     		} catch (InterruptedException e) {
@@ -193,7 +188,7 @@ public class ARPLayer implements BaseLayer {
     		updateCache(input);
     		if(isTargetMe(input)){
     			for(int i = 0; i < 6; i++)
-    				m_sHeader.dst_mac_addr.addr[i] = input[10+i];
+    				m_sHeader.dst_mac_addr.addr[i] = input[8+i];
     			for(int i = 0; i < 4; i++)
     				m_sHeader.dst_ip_addr.addr[i] = input[14+i];
     			m_sHeader.opcode[1] = 0x02;

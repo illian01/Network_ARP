@@ -137,9 +137,32 @@ public class IPLayer implements BaseLayer {
 		if(!CheckAddress(input)) return false;
 		if(input[0] != 0x04) return false;
 		
-		byte[] data = RemoveIPHeader(input, input.length);
+		byte[] tmp = RemoveIPHeader(input, input.length);
+		byte[] data = new byte[tmp.length+4];
+		byte[] addr = extractSrcFromInput(input);
+		
+		for(int i = 0; i < tmp.length; i++) {
+			data[i] = tmp[i];
+		}
+		
+		data[tmp.length] = addr[0];
+		data[tmp.length+1] = addr[1];
+		data[tmp.length+2] = addr[2];
+		data[tmp.length+3] = addr[3];
+		
 		this.GetUpperLayer(0).Receive(data); // TCP
 		return true;
+	}
+	
+	private byte[] extractSrcFromInput(byte[] input) {
+		byte[] addr = new byte[4];
+		
+		addr[0] = input[12];
+		addr[1] = input[13];
+		addr[2] = input[14];
+		addr[3] = input[15];
+		
+		return addr;
 	}
 	
 	public boolean CheckAddress(byte[] packet) {

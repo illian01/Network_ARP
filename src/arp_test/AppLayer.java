@@ -52,9 +52,14 @@ public class AppLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Send(byte[] input, int length) {
-		Send_Thread thread = new Send_Thread(input, length);
-		Thread send = new Thread(thread);
-		send.start();
+		byte[] sendData; // data for sending
+		
+		m_sHeader.capp_totlen[0] = (byte) (length / 256);
+		m_sHeader.capp_totlen[1] = (byte) (length % 256);
+
+		sendData = ObjToByte(m_sHeader, input, length);
+		
+		p_UnderLayer.Send(sendData, sendData.length);
 		
 		return true;
 	}
@@ -69,9 +74,8 @@ public class AppLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Receive(byte[] input) {
-		
 		int totalLength = (input[0] & 0xFF) * 256 | (input[1] & 0xFF);
-		if (totalLength != input.length - 4) return false;
+		if (totalLength != input.length - 8) return false;
 		
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
@@ -79,23 +83,6 @@ public class AppLayer implements BaseLayer {
 		return true;
 	}
 	
-	class Send_Thread implements Runnable { // Send Thread
-		byte[] sendData; // data for sending
-	
-		public Send_Thread(byte[] input, int length) {
-			m_sHeader.capp_totlen[0] = (byte) (length / 256);
-			m_sHeader.capp_totlen[1] = (byte) (length % 256);
-
-			sendData = ObjToByte(m_sHeader, input, length);
-		}
-		
-		public void run() {
-			while(true) {
-				p_UnderLayer.Send(sendData, sendData.length);
-			}
-		}
-	}
-
 	@Override
 	public String GetLayerName() {
 		// TODO Auto-generated method stub
