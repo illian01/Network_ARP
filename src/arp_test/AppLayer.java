@@ -54,33 +54,36 @@ public class AppLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-	
+
 		byte[] send;
-		m_sHeader.capp_totlen[0] = (byte) (length/255);
-		m_sHeader.capp_totlen[1] = (byte) (length%255);
-		
+		m_sHeader.capp_totlen[0] = (byte) (length / 256);
+		m_sHeader.capp_totlen[1] = (byte) (length % 256);
+
 		send = ObjToByte(m_sHeader, input, length);
 		p_UnderLayer.Send(send, send.length);
-		
 		return true;
 	}
-	
+
 	public byte[] RemoveCappHeader(byte[] input, int length) {
 		byte[] buf = new byte[length - 4];
 
 		for (int i = 4; i < length; i++)
-			buf[i-4] = input[i];
+			buf[i - 4] = input[i];
 
 		return buf;
 	}
 
 	public synchronized boolean Receive(byte[] input) {
+		
+		int totalLength = (input[0] & 0xFF) * 256 | (input[1] & 0XFF);
+		if (totalLength != input.length - 4) return false;
+		
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
 		this.GetUpperLayer(1).Receive(data);
 		return true;
 	}
-	
+
 	@Override
 	public String GetLayerName() {
 		// TODO Auto-generated method stub
@@ -126,6 +129,5 @@ public class AppLayer implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
-
 
 }
