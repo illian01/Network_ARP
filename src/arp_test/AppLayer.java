@@ -56,12 +56,12 @@ public class AppLayer implements BaseLayer {
 	public boolean Send(byte[] input, int length) {
 	
 		byte[] send;
-		m_sHeader.capp_totlen[0] = (byte) (length/255);
-		m_sHeader.capp_totlen[1] = (byte) (length%255);
+		m_sHeader.capp_totlen[1] = (byte) ((length >> 8) & 0xFF); // total lenght
+		m_sHeader.capp_totlen[0] = (byte) (length & 0xFF);
 		
 		send = ObjToByte(m_sHeader, input, length);
 		p_UnderLayer.Send(send, send.length);
-		
+
 		return true;
 	}
 	
@@ -75,6 +75,10 @@ public class AppLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Receive(byte[] input) {
+
+		int totalLength = ((input[1] & 0xFF) << 8) | (input[0] & 0xFF); 
+		if(totalLength != input.length - 4) return false;
+
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
 		this.GetUpperLayer(1).Receive(data);
