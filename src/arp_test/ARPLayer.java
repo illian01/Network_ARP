@@ -126,8 +126,13 @@ public class ARPLayer implements BaseLayer {
         return buf;
     }
 
+<<<<<<< HEAD
     public synchronized boolean Send(byte[] input, int length) {
         String dstIP_addr = getDstIPAddrFromIP(input);
+=======
+    public boolean Send(byte[] input, int length) {
+    	String dstIP_addr = getDstIPAddrFromIP(input);
+>>>>>>> 64ecf1dcae6e956adba8d314a279edd8ad6e4b6e
         String[] token = dstIP_addr.split("\\.");
         
         if(isGratuitousSend(input) || !cacheTable.containsKey(dstIP_addr)) {
@@ -158,8 +163,10 @@ public class ARPLayer implements BaseLayer {
 			
         }
         
-        if(length > 48)
-    		GetUnderLayer().Send(input, input.length);
+        if(length > 48) {
+        	((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheTable.get(dstIP_addr));
+        	GetUnderLayer().Send(input, input.length);
+        }
       
         return true;
     }
