@@ -65,7 +65,7 @@ public class NILayer implements BaseLayer {
 		m_AdapterObject = Pcap.openLive(m_pAdapterList.get(m_iNumAdapter).getName(), snaplen, flags, timeout, errbuf);
 	}
 
-	public boolean Send(byte[] input, int length) {
+	public synchronized boolean Send(byte[] input, int length) {
 
 		ByteBuffer buf = ByteBuffer.wrap(input);
 		if (m_AdapterObject.sendPacket(buf) != Pcap.OK) {

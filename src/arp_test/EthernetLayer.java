@@ -75,7 +75,7 @@ public class EthernetLayer implements BaseLayer {
 		return data;
 	}
 	
-	public boolean Send(byte[] input, int length) {
+	public synchronized boolean Send(byte[] input, int length) {
 
 		byte[] bytes;
 		m_sHeader.enet_type[0] = (byte) 0x08;
