@@ -32,7 +32,7 @@ public class IPLayer implements BaseLayer {
 			this.ip_src =  new _IP_ADDR();
 			this.ip_dst = new _IP_ADDR();
 			
-			this.ip_verlen = 0x00;
+			this.ip_verlen = 0x04;
 			this.ip_tos = 0x00;
 			this.ip_len = new byte[2];
 			this.ip_id = new byte[2];
@@ -83,6 +83,7 @@ public class IPLayer implements BaseLayer {
 		m_sHeader.ip_proto = 0x00;
 		m_sHeader.ip_data = null;
 	}
+	
 
 	public byte[] ObjToByte(_IP Header, byte[] input, int length) {
 		byte[] buf = new byte[length + 20];
@@ -113,6 +114,7 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
+
 		byte[] send = ObjToByte(m_sHeader, input, length);
 		p_UnderLayer.Send(send, send.length); // ARP
 
@@ -131,8 +133,27 @@ public class IPLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 
+		if(!CheckAddress(input)) return false;
+		
 		byte[] data = RemoveIPHeader(input, input.length);
 		this.GetUpperLayer(0).Receive(data); // TCP
+		return true;
+	}
+	
+	public boolean CheckAddress(byte[] packet) {
+		
+		// srcaddr == my ip addr -> false
+		for (int i = 0; i < 4; i++) {
+			if(packet[i+12] != m_sHeader.ip_src.addr[i]) break;
+			if(i == 5) return false;
+		}
+
+		// dstaddr != my ip addr -> false
+		for (int i = 0; i < 4; i++) {
+			if(packet[i+16] != m_sHeader.ip_src.addr[i])
+				return false;
+		}
+		
 		return true;
 	}
 	
