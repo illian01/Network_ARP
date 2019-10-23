@@ -266,11 +266,15 @@ public class ChatDlg extends JFrame implements BaseLayer {
 				byte[] input = text.getBytes();
 				((IPLayer) m_LayerMgr.GetLayer("IP")).SetIP_dstaddr(dstIPAddress.getText());
 				ChattingWrite.setText("");
-				GetUnderLayer().Send(input, input.length);
+				if(GetUnderLayer().Send(input, input.length)) {
+					ChattingArea.append("[SEND] : ");
+					ChattingArea.append("\n");
+					ChattingArea.append(text);					
+				}
+				else
+					ChattingArea.append("[SEND] : SEND FAILED\n");
+				
 
-				ChattingArea.append("[SEND] : ");
-				ChattingArea.append(text);
-				ChattingArea.append("\n");
 			}
 		}
 	}
