@@ -76,6 +76,9 @@ public class AppLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 
+		int totalLength =  input[0] * 256 + input[1] ;
+		if(totalLength != input.length - 4) return false;
+
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
 		this.GetUpperLayer(1).Receive(data);
