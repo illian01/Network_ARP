@@ -13,7 +13,8 @@ public class ARPLayer implements BaseLayer {
     public BaseLayer p_UnderLayer = null;
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
-    private Map<String, String> cacheTable = new HashMap<>();
+    private Map<String, String> cacheAddrTable = new HashMap<>();
+    private Map<String, String> cacheStatusTable = new HashMap<>();
     private Map<String, String> ProxyARPCacheTable = new HashMap<>();
 
     private _ARP_Packet m_sHeader = new _ARP_Packet();
@@ -130,7 +131,7 @@ public class ARPLayer implements BaseLayer {
         String dstIP_addr = getDstIPAddrFromIP(input);
         String[] token = dstIP_addr.split("\\.");
         
-        if(isGratuitousSend(input) || !cacheTable.containsKey(dstIP_addr)) {
+        if(isGratuitousSend(input) || !cacheAddrTable.containsKey(dstIP_addr)) {
         	
         	m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
     		m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
@@ -148,7 +149,7 @@ public class ARPLayer implements BaseLayer {
 			GetUnderLayer().Send(msg, msg.length);
 			try {
     			int n = 0;
-    			while(!cacheTable.containsKey(dstIP_addr)) {
+    			while(!cacheAddrTable.containsKey(dstIP_addr)) {
     				Thread.sleep(1000);
     				if(n++ == 5) return false;
     			}
@@ -159,7 +160,7 @@ public class ARPLayer implements BaseLayer {
         }
         
         if(length > 48) {
-        	((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheTable.get(dstIP_addr));
+        	((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheAddrTable.get(dstIP_addr));
         	GetUnderLayer().Send(input, input.length);
         }
       
@@ -217,7 +218,7 @@ public class ARPLayer implements BaseLayer {
     private void updateCache(byte[] input) {
     	String src_ip = getSrcIPAddrFromARP(input);
 		String src_mac = getSrcMACAddrFromARP(input);
-		this.cacheTable.put(src_ip, src_mac);
+		this.cacheAddrTable.put(src_ip, src_mac);
 		updateCacheTableGUI();
     }
     
@@ -342,8 +343,8 @@ public class ARPLayer implements BaseLayer {
     	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
     	
     	DefaultListModel<String> model = new DefaultListModel<>();
-    	for(String str : cacheTable.keySet()) {
-    		String append = str + "    " + cacheTable.get(str) + "    complete";
+    	for(String str : cacheAddrTable.keySet()) {
+    		String append = str + "    " + cacheAddrTable.get(str) + "    complete";
     		model.addElement(append);
     	}
     	GUI.ARPCacheList.setModel(model);
@@ -446,12 +447,12 @@ public class ARPLayer implements BaseLayer {
     }
 
     public void removeCache(String ipAddr) {
-    	cacheTable.remove(ipAddr);
+    	cacheAddrTable.remove(ipAddr);
     	updateCacheTableGUI();
     }
     
     public void removeCacheAll() {
-    	cacheTable = new HashMap<>();
+    	cacheAddrTable = new HashMap<>();
     	updateCacheTableGUI();
     }
     
