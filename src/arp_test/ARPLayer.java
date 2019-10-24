@@ -131,7 +131,7 @@ public class ARPLayer implements BaseLayer {
         String dstIP_addr = getDstIPAddrFromIP(input);
         String[] token = dstIP_addr.split("\\.");
         
-        if(isGratuitousSend(input) || !cacheAddrTable.containsKey(dstIP_addr)) {
+        if(isGratuitousSend(input) || !cacheAddrTable.containsKey(dstIP_addr) || cacheStatusTable.get(dstIP_addr) != "completed") {
         	
         	m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
     		m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
@@ -149,7 +149,10 @@ public class ARPLayer implements BaseLayer {
 			GetUnderLayer().Send(msg, msg.length);
 			try {
     			int n = 0;
-    			while(!cacheAddrTable.containsKey(dstIP_addr)) {
+    			cacheAddrTable.put(dstIP_addr, "00-00-00-00-00-00"); 
+    			cacheStatusTable.put(dstIP_addr, "Incomplete");
+    			updateCacheTableGUI();
+    			while(cacheStatusTable.get(dstIP_addr) != "completed") {
     				Thread.sleep(1000);
     				if(n++ == 5) return false;
     			}
@@ -159,7 +162,7 @@ public class ARPLayer implements BaseLayer {
 			
         }
         
-        if(length > 48) {
+        if(length > 48 && cacheStatusTable.get(dstIP_addr) == "completed") {
         	((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheAddrTable.get(dstIP_addr));
         	GetUnderLayer().Send(input, input.length);
         }
@@ -219,6 +222,7 @@ public class ARPLayer implements BaseLayer {
     	String src_ip = getSrcIPAddrFromARP(input);
 		String src_mac = getSrcMACAddrFromARP(input);
 		this.cacheAddrTable.put(src_ip, src_mac);
+		this.cacheStatusTable.put(src_ip, "Completed");
 		updateCacheTableGUI();
     }
     
@@ -344,7 +348,7 @@ public class ARPLayer implements BaseLayer {
     	
     	DefaultListModel<String> model = new DefaultListModel<>();
     	for(String str : cacheAddrTable.keySet()) {
-    		String append = str + "    " + cacheAddrTable.get(str) + "    complete";
+    		String append = str + "    " + cacheAddrTable.get(str) + "    " + cacheStatusTable.get(str);
     		model.addElement(append);
     	}
     	GUI.ARPCacheList.setModel(model);
