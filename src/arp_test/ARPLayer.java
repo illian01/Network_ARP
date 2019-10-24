@@ -195,6 +195,19 @@ public class ARPLayer implements BaseLayer {
     			byte[] response = ObjToByte();
     			GetUnderLayer().Send(response, response.length);
     		}
+    		else if(ProxyARPCacheTable.containsKey(getDstIPAddrFromARP(input))) {
+    			for(int i = 0; i < 6; i++)
+    				m_sHeader.dst_mac_addr.addr[i] = input[10+i];
+    			for(int i = 0; i < 4; i++)
+    				m_sHeader.dst_ip_addr.addr[i] = input[14+i];
+    			m_sHeader.opcode[1] = 0x02;
+    			byte[] response = ObjToByte();
+    			response[14] = input[24];
+    			response[15] = input[25];
+    			response[16] = input[26];
+    			response[17] = input[27];
+    			GetUnderLayer().Send(response, response.length);
+    		}
     		else return false;
     	}
 
@@ -282,6 +295,22 @@ public class ARPLayer implements BaseLayer {
 
         for (int i = 0; i < 4; ++i)
             addr[i] = input[i + 14];
+
+        addr_str += Byte.toUnsignedInt(addr[0]);
+        for (int j = 1; j < 4; ++j) {
+        	addr_str += ".";
+        	addr_str += Byte.toUnsignedInt(addr[j]);
+        }
+
+        return addr_str;
+    }
+    
+    private String getDstIPAddrFromARP(byte[] input) {
+    	byte[] addr = new byte[4];
+        String addr_str = new String();
+
+        for (int i = 0; i < 4; ++i)
+            addr[i] = input[i + 24];
 
         addr_str += Byte.toUnsignedInt(addr[0]);
         for (int j = 1; j < 4; ++j) {
