@@ -192,7 +192,7 @@ public class ARPLayer implements BaseLayer {
     		}
     		else if(ProxyARPCacheTable.containsKey(getDstIPAddrFromARP(input))) {
     			for(int i = 0; i < 6; i++)
-    				m_sHeader.dst_mac_addr.addr[i] = input[10+i];
+    				m_sHeader.dst_mac_addr.addr[i] = input[8+i];
     			for(int i = 0; i < 4; i++)
     				m_sHeader.dst_ip_addr.addr[i] = input[14+i];
     			m_sHeader.opcode[1] = 0x02;
