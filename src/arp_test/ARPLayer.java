@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
 import javax.swing.DefaultListModel;
 
 public class ARPLayer implements BaseLayer {
@@ -13,8 +12,8 @@ public class ARPLayer implements BaseLayer {
     public BaseLayer p_UnderLayer = null;
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
-    private Map<String, String> cacheTable = new HashMap<>();
-    private Map<String, String> ProxyARPCacheTable = new HashMap<>();
+    private Map<String, Entry> cacheTable = new HashMap<>();
+    private Map<String, Entry> ProxyARPCacheTable = new HashMap<>();
 
     private _ARP_Packet m_sHeader = new _ARP_Packet();
     
@@ -72,6 +71,9 @@ public class ARPLayer implements BaseLayer {
     public ARPLayer(String pName) {
         pLayerName = pName;
         setHeader();
+        ARPRepeatThread thread = new ARPRepeatThread();
+		Thread obj = new Thread(thread);
+		obj.start();
     }
 
     public void setHeader() {
@@ -145,22 +147,15 @@ public class ARPLayer implements BaseLayer {
     		m_sHeader.opcode[1] = 0x01;
         	
 			byte[] msg = ObjToByte();
+			cacheTable.put(dstIP_addr, new Entry(dstIP_addr, "??-??-??-??-??-??", "incomplete"));
+			updateCacheTableGUI();
 			GetUnderLayer().Send(msg, msg.length);
-			try {
-    			int n = 0;
-    			while(!cacheTable.containsKey(dstIP_addr)) {
-    				Thread.sleep(1000);
-    				if(n++ == 5) return false;
-    			}
-    		} catch (InterruptedException e) {
-    			e.printStackTrace();
-    		}
-			
         }
         
         if(length > 48) {
-        	((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheTable.get(dstIP_addr));
-        	GetUnderLayer().Send(input, input.length);
+        	SendThread thread = new SendThread(dstIP_addr, input);
+    		Thread obj = new Thread(thread);
+    		obj.start();
         }
       
         return true;
@@ -214,10 +209,10 @@ public class ARPLayer implements BaseLayer {
         return true;
     }
     
-    private void updateCache(byte[] input) {
+    private synchronized void updateCache(byte[] input) {
     	String src_ip = getSrcIPAddrFromARP(input);
 		String src_mac = getSrcMACAddrFromARP(input);
-		this.cacheTable.put(src_ip, src_mac);
+		this.cacheTable.put(src_ip, new Entry(src_ip, src_mac, "completed"));
 		updateCacheTableGUI();
     }
     
@@ -337,35 +332,35 @@ public class ARPLayer implements BaseLayer {
         return addr_str;
 	}
 	
-    public void updateCacheTableGUI() {
+    public synchronized void updateCacheTableGUI() {
     	
     	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
     	
     	DefaultListModel<String> model = new DefaultListModel<>();
     	for(String str : cacheTable.keySet()) {
-    		String append = str + "    " + cacheTable.get(str) + "    complete";
+    		String append = str + "    " + cacheTable.get(str).mac + "    " + cacheTable.get(str).status;
     		model.addElement(append);
     	}
     	GUI.ARPCacheList.setModel(model);
     }
     
-    public void updateProxyARPCacheTableGUI() {
+    public synchronized void updateProxyARPCacheTableGUI() {
     	
     	ARPDlg GUI = (ARPDlg) GetUnderLayer().GetUpperLayer(1).GetUpperLayer(0).GetUpperLayer(0).GetUpperLayer(0);
     	
     	DefaultListModel<String> model = new DefaultListModel<>();
     	for(String str : ProxyARPCacheTable.keySet()) {
-    		String append = str + "        " + ProxyARPCacheTable.get(str);
+    		String append = str + "        " + ProxyARPCacheTable.get(str).mac;
     		model.addElement(append);
     	}
     	GUI.ProxyARPEntryList.setModel(model);
     }
     
-    public void addProxyARPCacheTable(String ipAddr, String macAddr) {
+    public synchronized void addProxyARPCacheTable(String ipAddr, String macAddr) {
     	
     	// input format is xxx.xxx.xxx.xxx and XX:XX:XX:XX:XX:XX
         if (!ProxyARPCacheTable.containsKey(ipAddr)) {
-        	ProxyARPCacheTable.put(ipAddr, macAddr);
+        	ProxyARPCacheTable.put(ipAddr, new Entry(ipAddr, macAddr, "Proxy"));
         }
     }
 
@@ -415,7 +410,7 @@ public class ARPLayer implements BaseLayer {
         pUULayer.SetUnderLayer(this);
     }
 
-    public void SetMAC_dstaddr(String address) {
+    public synchronized void SetMAC_dstaddr(String address) {
         StringTokenizer st = new StringTokenizer(address, "-");
 
         for (int i = 0; i < 6; i++)
@@ -423,7 +418,7 @@ public class ARPLayer implements BaseLayer {
 
     }
 
-    public void SetMAC_srcaddr(String address) {
+    public synchronized void SetMAC_srcaddr(String address) {
         StringTokenizer st = new StringTokenizer(address, "-");
 
         for (int i = 0; i < 6; i++)
@@ -431,33 +426,119 @@ public class ARPLayer implements BaseLayer {
 
     }
 
-    public void SetIP_dstaddr(String address) {
+    public synchronized void SetIP_dstaddr(String address) {
         StringTokenizer st = new StringTokenizer(address, ".");
 
         for (int i = 0; i < 4; i++)
             m_sHeader.dst_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
     }
 
-    public void SetIP_srcaddr(String address) {
+    public synchronized void SetIP_srcaddr(String address) {
         StringTokenizer st = new StringTokenizer(address, ".");
 
         for (int i = 0; i < 4; i++)
             m_sHeader.src_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
     }
 
-    public void removeCache(String ipAddr) {
+    public synchronized void removeCache(String ipAddr) {
     	cacheTable.remove(ipAddr);
     	updateCacheTableGUI();
     }
     
-    public void removeCacheAll() {
+    public synchronized void removeCacheAll() {
     	cacheTable = new HashMap<>();
     	updateCacheTableGUI();
     }
     
-    public void removeProxyARPCache(String ipAddr) {
+    public synchronized void removeProxyARPCache(String ipAddr) {
     	ProxyARPCacheTable.remove(ipAddr);
     	updateCacheTableGUI();
     }
 
+    
+    class ARPRepeatThread implements Runnable {
+
+		public ARPRepeatThread() {}
+
+		public void run() {
+			while (true) {
+				for(String str : cacheTable.keySet()) {
+		    		Entry entry = cacheTable.get(str);
+		    		if(entry.status == "completed") {
+		    			if(System.currentTimeMillis() - entry.createdTime > 1200000) { // 1200000ms == 20 min
+		    				removeCache(str);
+		    			}
+		    		}
+		    		else if(entry.status == "incomplete") {
+		    			if(entry.count == 3) {
+		    				entry.status = "failed";
+		    				updateCacheTableGUI();
+		    			}
+		    			else {
+		    		        StringTokenizer st = new StringTokenizer(entry.ip, ".");
+		    		        for (int i = 0; i < 4; i++)
+		    		            m_sHeader.dst_ip_addr.addr[i] = (byte) Integer.parseInt(st.nextToken());
+		    	    		m_sHeader.dst_mac_addr.addr[0] = (byte) 0x00;
+		    	    		m_sHeader.dst_mac_addr.addr[1] = (byte) 0x00;
+		    	    		m_sHeader.dst_mac_addr.addr[2] = (byte) 0x00;
+		    	    		m_sHeader.dst_mac_addr.addr[3] = (byte) 0x00;
+		    	    		m_sHeader.dst_mac_addr.addr[4] = (byte) 0x00;
+		    	    		m_sHeader.dst_mac_addr.addr[5] = (byte) 0x00;
+		    	    		m_sHeader.opcode[1] = 0x01;
+		    	        	
+		    				byte[] msg = ObjToByte();
+		    				entry.count++;
+		    				updateCacheTableGUI();
+		    				GetUnderLayer().Send(msg, msg.length);
+		    			}
+		    		}
+		    	}
+				
+				try {
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+    
+    class SendThread implements Runnable {
+    	String dst_addr;
+    	byte[] input;
+    	
+		public SendThread(String dst_addr, byte[] input) {
+			this.dst_addr = dst_addr;
+			this.input = input;
+		}
+
+		public void run() {
+			while (cacheTable.containsKey(dst_addr)) {
+				Entry entry = cacheTable.get(dst_addr);
+				if(entry.status == "completed") {
+					((EthernetLayer) GetUnderLayer()).Setenet_dstaddr(cacheTable.get(dst_addr).mac);
+					GetUnderLayer().Send(input, input.length);
+					break;
+				}
+				else if(entry.status == "failed") break;
+			}
+		}
+		
+	}
+    
+    class Entry {
+    	String ip;
+    	String mac;
+    	String status;
+    	int count;
+    	long createdTime;
+    	
+    	public Entry(String ip, String mac, String status) {
+    		this.ip = ip;
+    		this.mac = mac;
+    		this.status = status;
+    		this.count = 0;
+    		this.createdTime = System.currentTimeMillis();
+    	}
+    }
 }
