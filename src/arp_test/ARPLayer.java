@@ -465,4 +465,71 @@ public class ARPLayer implements BaseLayer {
     	updateCacheTableGUI();
     }
 
+    
+    class ARPRepeatThread implements Runnable {
+        private Map<String, String> cacheAddrTable;
+        private Map<String, String> cacheStatusTable;
+
+		public ARPRepeatThread(Map<String, String> cacheAddrTable, Map<String, String> cacheStatusTable) {
+			this.cacheAddrTable = cacheAddrTable;
+			this.cacheStatusTable = cacheStatusTable;
+		}
+
+		public void run() {
+			while (true) {
+				for(String str : cacheAddrTable.keySet()) {
+		    		
+		    	}
+			}
+		}
+		
+		public synchronized boolean Send(byte[] input, int length) {
+	        String dstIP_addr = getDstIPAddrFromIP(input);
+	        String[] token = dstIP_addr.split("\\.");
+	        
+        	m_sHeader.dst_ip_addr.addr[0] = (byte) Integer.parseInt(token[0]);
+    		m_sHeader.dst_ip_addr.addr[1] = (byte) Integer.parseInt(token[1]);
+    		m_sHeader.dst_ip_addr.addr[2] = (byte) Integer.parseInt(token[2]);
+    		m_sHeader.dst_ip_addr.addr[3] = (byte) Integer.parseInt(token[3]);
+    		m_sHeader.dst_mac_addr.addr[0] = (byte) 0x00;
+    		m_sHeader.dst_mac_addr.addr[1] = (byte) 0x00;
+    		m_sHeader.dst_mac_addr.addr[2] = (byte) 0x00;
+    		m_sHeader.dst_mac_addr.addr[3] = (byte) 0x00;
+    		m_sHeader.dst_mac_addr.addr[4] = (byte) 0x00;
+    		m_sHeader.dst_mac_addr.addr[5] = (byte) 0x00;
+    		m_sHeader.opcode[1] = 0x01;
+        	
+			byte[] msg = ObjToByte();
+			GetUnderLayer().Send(msg, msg.length);
+			try {
+    			int n = 0;
+    			cacheAddrTable.put(dstIP_addr, "00-00-00-00-00-00"); 
+    			cacheStatusTable.put(dstIP_addr, "Incomplete");
+    			updateCacheTableGUI();
+    			while(cacheStatusTable.get(dstIP_addr) != "completed") {
+    				Thread.sleep(1000);
+    				if(n++ == 5) return false;
+    			}
+    		} catch (InterruptedException e) {
+    			e.printStackTrace();
+    		}
+			
+	        
+	        return true;
+	    }
+	}
+    
+    class Entry {
+    	String ip;
+    	String mac;
+    	String status;
+    	int count;
+    	
+    	public Entry(String ip, String mac, String status) {
+    		this.ip = ip;
+    		this.mac = mac;
+    		this.status = status;
+    		this.count = 0;
+    	}
+    }
 }
